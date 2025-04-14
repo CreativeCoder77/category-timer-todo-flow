@@ -1,0 +1,23 @@
+
+export interface Task {
+  id: string;
+  title: string;
+  description?: string;
+  completed: boolean;
+  categoryId?: string;
+  classIds: string[];
+  createdAt: Date;
+  order: number;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  color: string;
+}
+
+export interface CustomClass {
+  id: string;
+  name: string;
+  color: string;
+}
