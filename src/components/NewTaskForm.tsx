@@ -39,7 +39,7 @@ const NewTaskForm: React.FC<NewTaskFormProps> = ({ onComplete }) => {
         title: title.trim(),
         description,
         completed: false,
-        categoryId,
+        categoryId: categoryId || "default",
         classIds: selectedClasses,
         dueDate,
         priority,

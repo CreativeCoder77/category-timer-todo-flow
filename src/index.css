@@ -109,6 +109,10 @@
   .overdue {
     @apply text-red-600 font-medium;
   }
+
+  .btn-hover {
+    @apply transform transition-transform hover:scale-105 hover:shadow-md;
+  }
 }
 
 @layer utilities {
@@ -127,5 +131,9 @@
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
+  }
+
+  .btn-hover-effect {
+    @apply hover:bg-opacity-90 hover:scale-[1.02] transition-all duration-200 ease-in-out;
   }
 }

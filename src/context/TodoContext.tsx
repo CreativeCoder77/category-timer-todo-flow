@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { Task, Category, CustomClass } from "../types";
 import { toast } from "@/components/ui/sonner";
@@ -42,10 +41,16 @@ export const TodoProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [tasks, setTasks] = useState<Task[]>(() => {
     const savedTasks = localStorage.getItem("tasks");
     if (savedTasks) {
-      return JSON.parse(savedTasks).map((task: any) => ({
-        ...task,
-        createdAt: new Date(task.createdAt),
-      }));
+      try {
+        return JSON.parse(savedTasks).map((task: any) => ({
+          ...task,
+          createdAt: new Date(task.createdAt),
+          dueDate: task.dueDate ? new Date(task.dueDate) : undefined,
+        }));
+      } catch (error) {
+        console.error("Error parsing tasks:", error);
+        return [];
+      }
     }
     return [];
   });
@@ -63,7 +68,6 @@ export const TodoProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
 
-  // Save to localStorage whenever state changes
   useEffect(() => {
     localStorage.setItem("tasks", JSON.stringify(tasks));
   }, [tasks]);
@@ -77,11 +81,13 @@ export const TodoProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [customClasses]);
 
   const addTask = (task: Omit<Task, "id" | "createdAt" | "order">) => {
+    console.log("Adding task:", task);
     const newTask: Task = {
       ...task,
       id: uuidv4(),
       createdAt: new Date(),
       order: tasks.length,
+      classIds: task.classIds || [],
     };
     setTasks((prev) => [...prev, newTask]);
     toast("Task created successfully", {
@@ -138,7 +144,6 @@ export const TodoProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const deleteCategory = (categoryId: string) => {
     const categoryToDelete = categories.find(cat => cat.id === categoryId);
     setCategories((prev) => prev.filter((category) => category.id !== categoryId));
-    // Update tasks that had this category to have no category
     setTasks((prev) =>
       prev.map((task) =>
         task.categoryId === categoryId
@@ -177,7 +182,6 @@ export const TodoProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setCustomClasses((prev) =>
       prev.filter((customClass) => customClass.id !== customClassId)
     );
-    // Remove the class from tasks that had it
     setTasks((prev) =>
       prev.map((task) => ({
         ...task,
@@ -200,13 +204,11 @@ export const TodoProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [removed] = reorderedTasks.splice(sourceIndex, 1);
     reorderedTasks.splice(destinationIndex, 0, removed);
     
-    // Update the order property
     const updatedTasks = reorderedTasks.map((task, index) => ({
       ...task,
       order: index,
     }));
     
-    // Merge back with the tasks that weren't affected by the reordering
     setTasks((prev) =>
       activeCategory
         ? prev.map(
