@@ -140,12 +140,15 @@ const NewTaskForm: React.FC<NewTaskFormProps> = ({ onComplete }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label>Priority (Optional)</Label>
-          <Select value={priority || ""} onValueChange={(value: any) => setPriority(value || undefined)}>
+          <Select 
+            value={priority || ""} 
+            onValueChange={(value) => setPriority(value === "" ? undefined : value as "low" | "medium" | "high")}
+          >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Set priority" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">
+              <SelectItem value="none">
                 <span>No priority</span>
               </SelectItem>
               <SelectItem value="high">

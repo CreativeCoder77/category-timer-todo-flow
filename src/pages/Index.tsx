@@ -82,7 +82,7 @@ const TodoApp = () => {
         open={isNewTaskDialogOpen}
         onOpenChange={setIsNewTaskDialogOpen}
       >
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Create New Task</DialogTitle>
           </DialogHeader>
