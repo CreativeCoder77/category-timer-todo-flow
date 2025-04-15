@@ -19,7 +19,7 @@ const ClassBadge: React.FC<ClassBadgeProps> = ({
       className={cn(
         "inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium cursor-pointer transition-all",
         selected && "ring-2 ring-offset-1",
-        onClick && "hover:opacity-80"
+        onClick && "hover:opacity-80 hover:scale-105 transition-transform"
       )}
       style={{
         backgroundColor: `${customClass.color}20`,

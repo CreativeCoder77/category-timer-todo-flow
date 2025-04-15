@@ -1,10 +1,11 @@
 
 import React, { useState } from "react";
-import { Pencil, Trash, GripVertical, Check, Square } from "lucide-react";
+import { Pencil, Trash, GripVertical, Check, Square, Clock, Flag } from "lucide-react";
 import { Task, Category, CustomClass } from "@/types";
 import { useTodo } from "@/context/TodoContext";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
 import ClassBadge from "./ClassBadge";
 
 interface TaskItemProps {
@@ -44,13 +45,35 @@ const TaskItem: React.FC<TaskItemProps> = ({
       setIsEditing(false);
     }
   };
+  
+  // Check if task is due soon (within next 24 hours) or overdue
+  const isTaskDueSoon = () => {
+    if (!task.dueDate) return false;
+    const dueDate = new Date(task.dueDate);
+    const now = new Date();
+    const timeDiff = dueDate.getTime() - now.getTime();
+    return timeDiff > 0 && timeDiff < 24 * 60 * 60 * 1000;
+  };
+  
+  const isTaskOverdue = () => {
+    if (!task.dueDate) return false;
+    const dueDate = new Date(task.dueDate);
+    return dueDate < new Date();
+  };
+  
+  // Get priority class
+  const getPriorityClass = () => {
+    if (!task.priority) return "";
+    return `priority-${task.priority}`;
+  };
 
   return (
     <div
       className={cn(
         "task-card group flex items-center gap-3",
         isDragging && "opacity-50 bg-secondary",
-        task.completed && "opacity-75 bg-secondary/30"
+        task.completed && "opacity-75 bg-secondary/30",
+        getPriorityClass()
       )}
     >
       <div {...dragHandleProps} className="drag-handle">
@@ -108,7 +131,33 @@ const TaskItem: React.FC<TaskItemProps> = ({
           {taskClasses.map((cls) => (
             <ClassBadge key={cls.id} customClass={cls} />
           ))}
+          
+          {task.priority && (
+            <span className="flex items-center gap-1 text-xs">
+              <Flag className={cn(
+                "h-3 w-3",
+                task.priority === 'high' && "text-red-500",
+                task.priority === 'medium' && "text-amber-500",
+                task.priority === 'low' && "text-blue-500"
+              )} />
+              <span>{task.priority}</span>
+            </span>
+          )}
         </div>
+        
+        {task.dueDate && (
+          <div className={cn(
+            "text-xs mt-1 flex items-center gap-1",
+            isTaskDueSoon() && "due-soon",
+            isTaskOverdue() && "overdue"
+          )}>
+            <Clock className="h-3 w-3" />
+            <span>
+              {isTaskOverdue() ? "Overdue: " : "Due: "}
+              {format(new Date(task.dueDate), "MMM d, yyyy")}
+            </span>
+          </div>
+        )}
       </div>
 
       <div className="flex opacity-0 group-hover:opacity-100 transition-opacity duration-200">

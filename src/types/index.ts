@@ -8,6 +8,8 @@ export interface Task {
   classIds: string[];
   createdAt: Date;
   order: number;
+  dueDate?: Date;
+  priority?: 'low' | 'medium' | 'high';
 }
 
 export interface Category {

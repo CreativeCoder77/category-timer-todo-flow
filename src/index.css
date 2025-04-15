@@ -83,16 +83,49 @@
   }
   
   .category-pill {
-    @apply px-3 py-1 rounded-full text-xs font-medium;
+    @apply px-3 py-1 rounded-full text-xs font-medium inline-flex items-center;
   }
 
   .focus-mode {
     @apply fixed inset-0 bg-background/95 backdrop-blur-sm flex flex-col items-center justify-center z-50;
+  }
+  
+  .priority-high {
+    @apply bg-red-100 text-red-800 border-l-4 border-red-500;
+  }
+  
+  .priority-medium {
+    @apply bg-amber-100 text-amber-800 border-l-4 border-amber-500;
+  }
+  
+  .priority-low {
+    @apply bg-blue-100 text-blue-800 border-l-4 border-blue-500;
+  }
+  
+  .due-soon {
+    @apply text-amber-600 font-medium;
+  }
+  
+  .overdue {
+    @apply text-red-600 font-medium;
   }
 }
 
 @layer utilities {
   .drag-handle {
     @apply cursor-grab active:cursor-grabbing;
+  }
+  
+  .glass-effect {
+    @apply backdrop-blur-sm bg-white/70 dark:bg-black/30;
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 }
