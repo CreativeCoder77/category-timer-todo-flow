@@ -1,7 +1,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const DatePickerHTML: React.FC<{
