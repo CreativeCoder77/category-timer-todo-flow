@@ -5,389 +5,391 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TaskFlow</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lucide-icons@0.171.0/font/lucide.min.css">
   <style>
-    /* Reset and base styles */
-    * {
+    /* Reset and Base Styles */
+    *,
+    *::before,
+    *::after {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     }
 
     :root {
-      --background: #f7f5fb;
-      --foreground: #0f172a;
-      --primary: #b8a4f9;
-      --primary-foreground: #0f172a;
-      --secondary: #f1edfb;
-      --secondary-foreground: #0f172a;
-      --muted: #f3f4f6;
-      --muted-foreground: #64748b;
-      --accent: #9061f9;
-      --accent-foreground: #ffffff;
+      --background: #fafafa;
+      --foreground: #09090b;
+      --card: #ffffff;
+      --card-foreground: #09090b;
+      --popover: #ffffff;
+      --popover-foreground: #09090b;
+      --primary: #6941c6;
+      --primary-foreground: #ffffff;
+      --secondary: #f4f5f6;
+      --secondary-foreground: #09090b;
+      --muted: #f1f5f9;
+      --muted-foreground: #6c757d;
+      --accent: #f4f5f6;
+      --accent-foreground: #09090b;
       --destructive: #ef4444;
-      --destructive-foreground: #ffffff;
+      --destructive-foreground: #fafafa;
       --border: #e2e8f0;
       --input: #e2e8f0;
-      --ring: #9061f9;
-      --radius: 0.75rem;
+      --ring: #6941c6;
+      --radius: 0.5rem;
+      --sidebar-width: 250px;
     }
-
+    
     body {
-      background-color: var(--background);
-      color: var(--foreground);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       line-height: 1.5;
+      color: var(--foreground);
+      background-color: var(--background);
     }
-
+    
+    /* Layout */
     .container {
+      width: 100%;
       max-width: 1200px;
       margin: 0 auto;
-      padding: 1.5rem;
+      padding: 1rem;
     }
-
-    .header {
+    
+    .app {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
+      height: 100vh;
+      overflow: hidden;
     }
-
-    .header-buttons {
-      display: flex;
-      gap: 0.5rem;
+    
+    /* Sidebar */
+    .sidebar {
+      width: var(--sidebar-width);
+      background-color: var(--card);
+      border-right: 1px solid var(--border);
+      padding: 1rem;
+      overflow-y: auto;
+      height: 100%;
+      transition: transform 0.3s ease;
+      flex-shrink: 0;
     }
-
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 1.5rem;
-    }
-
-    @media (min-width: 768px) {
-      .grid {
-        grid-template-columns: 1fr 3fr;
+    
+    @media (max-width: 768px) {
+      .sidebar {
+        position: fixed;
+        z-index: 50;
+        transform: translateX(-100%);
+      }
+      
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      
+      .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 40;
+      }
+      
+      .sidebar-overlay.open {
+        display: block;
       }
     }
-
-    .card {
-      background-color: white;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
+    
+    /* Main Content */
+    .main {
+      flex: 1;
+      overflow-y: auto;
       padding: 1rem;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    }
-
-    .task-card {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      background-color: white;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-      padding: 1rem;
-      margin-bottom: 0.75rem;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-      transition: all 0.2s;
+      height: 100%;
     }
     
-    .task-card:hover {
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .task-card.priority-high {
-      border-left: 4px solid #ef4444;
-      background-color: #fee2e2;
-    }
-    
-    .task-card.priority-medium {
-      border-left: 4px solid #f97316;
-      background-color: #ffedd5;
-    }
-    
-    .task-card.priority-low {
-      border-left: 4px solid #0ea5e9;
-      background-color: #e0f2fe;
-    }
-
-    .task-card.completed {
-      opacity: 0.75;
-      background-color: var(--secondary);
-    }
-
-    .heading {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-    }
-
-    .title {
+    /* Typography */
+    h1 {
       font-size: 1.875rem;
       font-weight: 700;
-      color: var(--primary);
+      margin-bottom: 1rem;
     }
-
-    .subtitle {
-      color: var(--muted-foreground);
+    
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
     }
-
+    
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    
+    /* Components */
     .button {
       display: inline-flex;
       align-items: center;
       justify-content: center;
       border-radius: var(--radius);
-      font-weight: 500;
       padding: 0.5rem 1rem;
-      cursor: pointer;
-      transition: all 0.2s;
       font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.2s, color 0.2s, border-color 0.2s;
       border: 1px solid transparent;
     }
-
-    .button-default {
+    
+    .button-primary {
       background-color: var(--primary);
       color: var(--primary-foreground);
     }
     
-    .button-default:hover {
-      opacity: 0.9;
+    .button-primary:hover {
+      background-color: hsl(259, 60%, 44%);
     }
-
+    
+    .button-secondary {
+      background-color: var(--secondary);
+      color: var(--secondary-foreground);
+    }
+    
+    .button-secondary:hover {
+      background-color: hsl(210, 3%, 90%);
+    }
+    
     .button-outline {
       background-color: transparent;
-      border: 1px solid var(--border);
-      color: var(--foreground);
+      border-color: var(--border);
     }
     
     .button-outline:hover {
       background-color: var(--muted);
     }
-
-    .button-ghost {
-      background-color: transparent;
-      color: var(--foreground);
-    }
     
-    .button-ghost:hover {
-      background-color: var(--muted);
-    }
-
     .button-destructive {
       background-color: var(--destructive);
       color: var(--destructive-foreground);
     }
     
     .button-destructive:hover {
-      opacity: 0.9;
+      background-color: hsl(0, 84%, 54%);
     }
-
+    
+    .button-ghost {
+      background-color: transparent;
+    }
+    
+    .button-ghost:hover {
+      background-color: var(--muted);
+    }
+    
     .button-sm {
       padding: 0.25rem 0.5rem;
       font-size: 0.75rem;
     }
-
+    
     .button-icon {
       padding: 0.5rem;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
     }
-
-    .category-button {
-      display: flex;
-      align-items: center;
-      width: 100%;
-      text-align: left;
-      justify-content: flex-start;
-      margin-bottom: 0.25rem;
-      border-radius: var(--radius);
-      padding: 0.5rem 0.75rem;
+    
+    .button-icon-sm {
+      padding: 0.25rem;
+      height: 2rem;
+      width: 2rem;
     }
-
-    .category-button.active {
-      background-color: var(--primary);
-      color: var(--primary-foreground);
+    
+    .button[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
-
-    .category-color {
-      width: 0.75rem;
-      height: 0.75rem;
-      border-radius: 50%;
-      margin-right: 0.5rem;
-      display: inline-block;
-    }
-
-    .category-count {
-      margin-left: auto;
-      font-size: 0.75rem;
-      background-color: var(--secondary);
-      padding: 0.125rem 0.5rem;
-      border-radius: 0.375rem;
-    }
-
+    
+    /* Forms */
     .input {
       width: 100%;
-      padding: 0.5rem 0.75rem;
+      padding: 0.5rem;
       border-radius: var(--radius);
       border: 1px solid var(--input);
-      background-color: white;
+      background-color: var(--background);
+      color: var(--foreground);
+      font-size: 0.875rem;
+      transition: border-color 0.2s;
     }
-
+    
     .input:focus {
       outline: none;
       border-color: var(--ring);
-      box-shadow: 0 0 0 2px rgba(144, 97, 249, 0.2);
+      box-shadow: 0 0 0 2px rgba(105, 65, 198, 0.1);
     }
-
-    .form-group {
-      margin-bottom: 1rem;
-    }
-
+    
     .label {
       display: block;
       font-size: 0.875rem;
       font-weight: 500;
       margin-bottom: 0.25rem;
     }
-
-    .flex {
+    
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    
+    /* Task List */
+    .task-card {
       display: flex;
-    }
-
-    .flex-col {
-      flex-direction: column;
-    }
-
-    .items-center {
       align-items: center;
+      padding: 0.75rem;
+      border-radius: var(--radius);
+      background-color: var(--card);
+      border: 1px solid var(--border);
+      margin-bottom: 0.5rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+      user-select: none;
     }
-
-    .justify-between {
-      justify-content: space-between;
+    
+    .task-card.dragging {
+      opacity: 0.5;
+      background-color: var(--secondary);
     }
-
-    .gap-1 {
-      gap: 0.25rem;
+    
+    .task-card:hover {
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     }
-
-    .gap-2 {
-      gap: 0.5rem;
+    
+    .drag-handle {
+      cursor: grab;
+      margin-right: 0.5rem;
+      color: var(--muted-foreground);
     }
-
-    .gap-4 {
-      gap: 1rem;
-    }
-
-    .w-full {
-      width: 100%;
-    }
-
-    .space-y-2 > * + * {
-      margin-top: 0.5rem;
-    }
-
-    .space-y-4 > * + * {
-      margin-top: 1rem;
-    }
-
-    .flex-1 {
-      flex: 1;
-    }
-
+    
     .task-title {
       font-size: 0.875rem;
       font-weight: 500;
+      margin-bottom: 0.25rem;
     }
-
-    .task-completed {
+    
+    .task-completed .task-title {
       text-decoration: line-through;
       color: var(--muted-foreground);
     }
-
+    
     .task-meta {
       display: flex;
       flex-wrap: wrap;
       gap: 0.25rem;
-      margin-top: 0.25rem;
     }
-
+    
     .category-pill {
       font-size: 0.75rem;
-      font-weight: 500;
-      padding: 0.125rem 0.5rem;
-      border-radius: 9999px;
-      display: inline-flex;
-      align-items: center;
+      padding: 0.125rem 0.375rem;
+      border-radius: 1rem;
+      white-space: nowrap;
     }
-
+    
     .class-badge {
       font-size: 0.75rem;
-      font-weight: 500;
-      padding: 0.125rem 0.5rem;
-      border-radius: 0.375rem;
-      display: inline-flex;
-      align-items: center;
-      cursor: pointer;
-      transition: all 0.2s;
+      padding: 0.125rem 0.375rem;
+      border-radius: 1rem;
+      white-space: nowrap;
     }
-
-    .class-badge.selected {
-      box-shadow: 0 0 0 2px var(--ring);
-    }
-
-    .task-due-date {
-      font-size: 0.75rem;
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-      margin-top: 0.25rem;
-    }
-
-    .due-soon {
-      color: #f97316;
-      font-weight: 500;
-    }
-
-    .overdue {
-      color: #ef4444;
-      font-weight: 500;
-    }
-
+    
     .task-actions {
+      margin-left: auto;
       display: flex;
       opacity: 0;
       transition: opacity 0.2s;
     }
-
+    
     .task-card:hover .task-actions {
       opacity: 1;
     }
 
-    .tabs {
+    .priority-high {
+      border-left: 3px solid #ef4444;
+    }
+    
+    .priority-medium {
+      border-left: 3px solid #f59e0b;
+    }
+    
+    .priority-low {
+      border-left: 3px solid #3b82f6;
+    }
+    
+    .due-soon {
+      color: #f59e0b;
+    }
+    
+    .overdue {
+      color: #ef4444;
+    }
+    
+    /* Filter Bar */
+    .filter-bar {
       display: flex;
-      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 0.5rem;
       margin-bottom: 1rem;
+      align-items: center;
     }
-
-    .tab {
-      padding: 0.5rem 1rem;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
+    
+    .search-input {
+      position: relative;
+      flex: 1;
     }
-
-    .tab.active {
-      border-bottom-color: var(--primary);
-      font-weight: 500;
+    
+    .search-input .input {
+      padding-left: 2rem;
     }
-
-    .tab-content {
+    
+    .search-icon {
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted-foreground);
+      pointer-events: none;
+    }
+    
+    /* Dropdown */
+    .dropdown {
+      position: relative;
+    }
+    
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      z-index: 10;
+      min-width: 10rem;
+      padding: 0.5rem;
+      background-color: var(--popover);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      margin-top: 0.25rem;
       display: none;
     }
-
-    .tab-content.active {
+    
+    .dropdown-menu.open {
       display: block;
+      animation: fadeIn 0.2s ease-out;
+    }
+    
+    .dropdown-item {
+      padding: 0.375rem 0.5rem;
+      cursor: pointer;
+      border-radius: calc(var(--radius) - 0.25rem);
+      font-size: 0.875rem;
+    }
+    
+    .dropdown-item:hover {
+      background-color: var(--muted);
     }
 
-    .dialog-overlay {
+    /* Modal/Dialog */
+    .modal-overlay {
       position: fixed;
       top: 0;
       left: 0;
@@ -398,209 +400,167 @@
       align-items: center;
       justify-content: center;
       z-index: 50;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s ease-in-out;
     }
-
-    .dialog {
-      background-color: white;
+    
+    .modal-overlay.open {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .modal {
+      background-color: var(--card);
       border-radius: var(--radius);
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
       padding: 1.5rem;
       width: 100%;
-      max-width: 500px;
+      max-width: 32rem;
       max-height: 90vh;
       overflow-y: auto;
+      position: relative;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      transform: translateY(-10px);
+      opacity: 0;
+      transition: transform 0.2s ease, opacity 0.2s ease;
     }
-
-    .dialog-header {
+    
+    .modal-overlay.open .modal {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 1rem;
     }
-
-    .dialog-title {
+    
+    .modal-title {
       font-size: 1.25rem;
       font-weight: 600;
     }
-
-    .dialog-close {
-      position: absolute;
-      top: 0.75rem;
-      right: 0.75rem;
-    }
-
-    .color-picker {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-    }
-
-    .color-option {
-      width: 2rem;
-      height: 2rem;
-      border-radius: 50%;
+    
+    .modal-close {
+      background: none;
+      border: none;
       cursor: pointer;
-      border: 2px solid transparent;
-    }
-
-    .color-option.selected {
-      border-color: var(--ring);
-      box-shadow: 0 0 0 2px rgba(144, 97, 249, 0.2);
-    }
-
-    .drag-handle {
-      cursor: grab;
-    }
-
-    .dragging {
-      opacity: 0.5;
-    }
-
-    .search-container {
-      position: relative;
-    }
-
-    .search-icon {
-      position: absolute;
-      left: 0.75rem;
-      top: 50%;
-      transform: translateY(-50%);
       color: var(--muted-foreground);
     }
-
-    .search-input {
-      padding-left: 2.5rem;
+    
+    .modal-close:hover {
+      color: var(--foreground);
     }
-
-    .filter-buttons {
+    
+    .modal-body {
+      margin-bottom: 1rem;
+    }
+    
+    .modal-footer {
       display: flex;
-      flex-wrap: wrap;
+      justify-content: flex-end;
       gap: 0.5rem;
-      margin-top: 0.5rem;
     }
-
-    .dropdown {
-      position: relative;
-      display: inline-block;
-    }
-
-    .dropdown-content {
-      display: none;
-      position: absolute;
-      right: 0;
-      min-width: 160px;
-      background-color: white;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-      z-index: 10;
-    }
-
-    .dropdown.open .dropdown-content {
-      display: block;
-    }
-
-    .dropdown-item {
-      padding: 0.5rem 0.75rem;
-      cursor: pointer;
-    }
-
-    .dropdown-item:hover {
-      background-color: var(--muted);
-    }
-
-    .progress-container {
-      height: 0.5rem;
-      background-color: var(--secondary);
-      border-radius: 9999px;
-      overflow: hidden;
-    }
-
-    .progress-bar {
-      height: 100%;
-      background-color: var(--primary);
-      transition: width 0.3s ease;
-    }
-
-    .focus-mode {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: rgba(247, 245, 251, 0.95);
-      backdrop-filter: blur(4px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-    }
-
-    .focus-timer {
-      background-color: white;
-      border-radius: var(--radius);
-      padding: 2rem;
-      width: 100%;
-      max-width: 400px;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
-      text-align: center;
-    }
-
-    .timer-display {
-      font-size: 3rem;
-      font-weight: 700;
-      margin: 1rem 0;
-    }
-
-    .timer-progress {
-      height: 0.5rem;
-      background-color: var(--secondary);
-      border-radius: 9999px;
-      overflow: hidden;
+    
+    /* Category List */
+    .category-list {
+      list-style: none;
       margin-bottom: 1.5rem;
     }
-
-    .timer-controls {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-    }
-
-    .timer-button {
-      width: 3.5rem;
-      height: 3.5rem;
-      border-radius: 50%;
+    
+    .category-item {
       display: flex;
       align-items: center;
-      justify-content: center;
-    }
-
-    .toast {
-      position: fixed;
-      bottom: 1rem;
-      right: 1rem;
-      background-color: white;
+      padding: 0.5rem;
       border-radius: var(--radius);
-      padding: 1rem;
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-      display: flex;
-      flex-direction: column;
-      width: 350px;
-      max-width: calc(100vw - 2rem);
-      z-index: 200;
-      animation: slideIn 0.3s ease;
-    }
-
-    .toast-header {
-      font-weight: 600;
+      cursor: pointer;
       margin-bottom: 0.25rem;
     }
-
-    .calendar-popup {
-      background-color: white;
+    
+    .category-item:hover,
+    .category-item.active {
+      background-color: var(--muted);
+    }
+    
+    .category-color {
+      width: 0.75rem;
+      height: 0.75rem;
+      border-radius: 50%;
+      margin-right: 0.5rem;
+    }
+    
+    .category-name {
+      font-size: 0.875rem;
+      flex: 1;
+    }
+    
+    .category-count {
+      font-size: 0.75rem;
+      color: var(--muted-foreground);
+      background-color: var(--muted);
+      border-radius: 1rem;
+      padding: 0 0.5rem;
+    }
+    
+    /* Focus Timer */
+    .focus-timer {
+      padding: 1rem;
       border-radius: var(--radius);
+      background-color: var(--muted);
+      margin-bottom: 1rem;
+    }
+    
+    .timer-display {
+      font-size: 2rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    
+    .timer-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    
+    /* Animations */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-5px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    /* Date Picker */
+    .datepicker {
+      position: relative;
+    }
+
+    .calendar {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      z-index: 10;
+      width: 250px;
+      padding: 1rem;
+      background-color: var(--card);
       border: 1px solid var(--border);
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-      padding: 0.75rem;
-      width: 280px;
-      max-width: 100%;
+      border-radius: var(--radius);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .calendar.open {
+      display: block;
     }
 
     .calendar-header {
@@ -610,42 +570,33 @@
       margin-bottom: 0.5rem;
     }
 
-    .calendar-title {
-      font-weight: 500;
-      font-size: 0.875rem;
-    }
-
-    .calendar-nav {
-      display: flex;
-      gap: 0.25rem;
-    }
-
     .calendar-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
-      grid-gap: 0.25rem;
+      gap: 2px;
     }
 
-    .calendar-weekday {
+    .calendar-day-header {
       text-align: center;
       font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem;
       color: var(--muted-foreground);
-      padding: 0.5rem 0;
     }
 
     .calendar-day {
-      height: 2.25rem;
-      width: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: var(--radius);
+      height: 30px;
+      width: 100%;
       font-size: 0.875rem;
       cursor: pointer;
+      border-radius: calc(var(--radius) - 0.25rem);
     }
 
-    .calendar-day:hover {
-      background-color: var(--secondary);
+    .calendar-day.current-month:hover {
+      background-color: var(--muted);
     }
 
     .calendar-day.selected {
@@ -653,24 +604,70 @@
       color: var(--primary-foreground);
     }
 
+    .calendar-day.other-month {
+      color: var(--muted-foreground);
+      opacity: 0.5;
+    }
+
     .calendar-day.today {
-      background-color: var(--secondary);
+      font-weight: 700;
+      border: 1px solid var(--primary);
+    }
+
+    /* Toast Notification */
+    .toast-container {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 0.5rem;
+      z-index: 100;
+    }
+
+    .toast {
+      padding: 0.75rem 1rem;
+      background-color: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      width: 18rem;
+      max-width: 90vw;
+      animation: slideInRight 0.3s ease-out;
+    }
+
+    .toast-content {
+      flex: 1;
+    }
+
+    .toast-title {
       font-weight: 500;
+      font-size: 0.875rem;
+      margin-bottom: 0.25rem;
     }
 
-    .sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
+    .toast-description {
+      font-size: 0.75rem;
+      color: var(--muted-foreground);
+    }
+
+    .toast-close {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted-foreground);
       padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border-width: 0;
+      height: 16px;
+      width: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    @keyframes slideIn {
+    @keyframes slideInRight {
       from {
         transform: translateX(100%);
         opacity: 0;
@@ -680,1742 +677,1408 @@
         opacity: 1;
       }
     }
+
+    /* Task Detail Modal */
+    .task-detail {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .task-detail-header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.5rem;
+    }
+
+    .task-detail-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .task-detail-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .task-detail-section {
+      margin-bottom: 1rem;
+    }
+
+    .task-detail-section-title {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--muted-foreground);
+      margin-bottom: 0.5rem;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header class="header">
-      <div>
-        <h1 class="title">TaskFlow</h1>
-        <p class="subtitle">Organize your tasks with ease</p>
-      </div>
-      
-      <div class="header-buttons">
-        <button id="focus-mode-button" class="button button-outline" style="display: none;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-          Focus Mode
+  <div class="app">
+    <div class="sidebar-overlay"></div>
+    <div class="sidebar">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3>TaskFlow</h3>
+        <button class="sidebar-close button button-ghost button-icon button-sm" aria-label="Close sidebar">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
         </button>
-        <button id="new-task-button" class="button button-default">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+      </div>
+
+      <div class="focus-timer">
+        <div class="timer-display">25:00</div>
+        <div class="timer-buttons">
+          <button class="button button-primary" id="start-timer">Start</button>
+          <button class="button button-outline" id="reset-timer" disabled>Reset</button>
+        </div>
+      </div>
+
+      <h3>Categories</h3>
+      <ul class="category-list" id="category-list">
+        <li class="category-item active" data-id="all">
+          <span class="category-name">All Tasks</span>
+          <span class="category-count">0</span>
+        </li>
+      </ul>
+
+      <div class="form-group">
+        <button class="button button-outline" id="add-category-btn" style="width: 100%;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.25rem;"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+          Add Category
+        </button>
+      </div>
+
+      <h3>Classes</h3>
+      <ul class="category-list" id="class-list"></ul>
+
+      <div class="form-group">
+        <button class="button button-outline" id="add-class-btn" style="width: 100%;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.25rem;"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+          Add Class
+        </button>
+      </div>
+    </div>
+
+    <div class="main">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <button class="button button-ghost button-icon sidebar-toggle" aria-label="Toggle sidebar" style="display: none;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" x2="21" y1="6" y2="6"></line><line x1="3" x2="21" y1="12" y2="12"></line><line x1="3" x2="21" y1="18" y2="18"></line></svg>
+        </button>
+        <h1>Tasks</h1>
+        <button class="button button-primary" id="add-task-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.25rem;"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
           New Task
         </button>
       </div>
-    </header>
 
-    <div class="grid">
-      <div class="space-y-4">
-        <div class="card">
-          <div class="flex items-center justify-between mb-2">
-            <h2 class="heading">Categories</h2>
-            <button id="new-category-button" class="button button-ghost button-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-            </button>
-          </div>
-          
-          <div id="categories-list">
-            <!-- Categories will be dynamically inserted here -->
-          </div>
+      <div class="filter-bar">
+        <div class="search-input">
+          <span class="search-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+          </span>
+          <input type="text" class="input" id="search-input" placeholder="Search tasks...">
         </div>
 
-        <div class="card">
-          <div class="tabs">
-            <div class="tab active" data-tab="stats">Stats</div>
-            <div class="tab" data-tab="classes">Classes</div>
-          </div>
-
-          <div id="stats-content" class="tab-content active">
-            <div class="space-y-3">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-muted-foreground"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                  <span>Total</span>
-                </div>
-                <span id="total-tasks" class="font-medium">0</span>
-              </div>
-              
-              <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-green-500"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                  <span>Completed</span>
-                </div>
-                <span id="completed-tasks" class="font-medium">0</span>
-              </div>
-              
-              <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-primary"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
-                  <span>Pending</span>
-                </div>
-                <span id="pending-tasks" class="font-medium">0</span>
-              </div>
-              
-              <div class="pt-2">
-                <div class="flex justify-between text-sm mb-1">
-                  <span>Progress</span>
-                  <span id="progress-percent">0%</span>
-                </div>
-                <div class="progress-container">
-                  <div id="progress-bar" class="progress-bar" style="width: 0%"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div id="classes-content" class="tab-content">
-            <div class="space-y-4">
-              <div class="flex items-center justify-between">
-                <h3 class="font-medium">Custom Classes</h3>
-                <button id="new-class-button" class="button button-sm button-default">Add Class</button>
-              </div>
-              
-              <div id="classes-list" class="space-y-2">
-                <!-- Classes will be dynamically inserted here -->
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center mb-4">
-          <div class="search-container flex-1">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="search-icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <input type="text" id="search-input" class="search-input input" placeholder="Search tasks...">
-          </div>
-          
-          <div class="filter-buttons">
-            <button class="button button-sm filter-button" data-filter="all">All</button>
-            <button class="button button-sm button-outline filter-button" data-filter="active">Active</button>
-            <button class="button button-sm button-outline filter-button" data-filter="completed">Completed</button>
-            
-            <div class="dropdown" id="priority-dropdown">
-              <button class="button button-sm button-outline dropdown-trigger">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
-                Priority
-              </button>
-              <div class="dropdown-content">
-                <div class="dropdown-item" data-priority="all">All</div>
-                <div class="dropdown-item" data-priority="high">High</div>
-                <div class="dropdown-item" data-priority="medium">Medium</div>
-                <div class="dropdown-item" data-priority="low">Low</div>
-              </div>
-            </div>
-            
-            <div class="dropdown" id="sort-dropdown">
-              <button class="button button-sm button-outline dropdown-trigger">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m3 16 4 4 4-4"></path><path d="M7 20V4"></path><path d="M11 4h10"></path><path d="M11 8h7"></path><path d="M11 12h4"></path></svg>
-                Sort
-              </button>
-              <div class="dropdown-content">
-                <div class="dropdown-item" data-sort="order">Manual Order</div>
-                <div class="dropdown-item" data-sort="title">Title</div>
-                <div class="dropdown-item" data-sort="dueDate">Due Date</div>
-                <div class="dropdown-item" data-sort="priority">Priority</div>
-              </div>
-            </div>
-          </div>
+        <div class="filter-buttons">
+          <button class="button button-sm button-primary" data-filter="all">All</button>
+          <button class="button button-sm button-outline" data-filter="active">Active</button>
+          <button class="button button-sm button-outline" data-filter="completed">Completed</button>
         </div>
 
-        <div id="tasks-container">
-          <!-- Tasks will be dynamically inserted here -->
-          <div id="no-tasks-message" class="text-center py-10 text-muted-foreground">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mx-auto mb-2"><path d="M21 6H3"></path><path d="M10 12H3"></path><path d="M10 18H3"></path><path d="M17 12a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1h-1a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h1Z"></path><path d="M17 18a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1h-1a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h1Z"></path></svg>
-            <p>No tasks found</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- New Task Dialog -->
-  <div id="new-task-dialog" class="dialog-overlay" style="display: none;">
-    <div class="dialog">
-      <div class="dialog-header">
-        <h2 class="dialog-title">Create New Task</h2>
-        <button class="dialog-close button button-ghost button-icon" data-close="new-task-dialog">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
-      </div>
-      
-      <form id="new-task-form" class="space-y-4">
-        <div class="form-group">
-          <label for="task-title" class="label">Task Title</label>
-          <input type="text" id="task-title" class="input" placeholder="Enter task title" required>
-        </div>
-
-        <div class="form-group">
-          <label for="task-description" class="label">Description (Optional)</label>
-          <textarea id="task-description" class="input" rows="3" placeholder="Enter task description"></textarea>
-        </div>
-
-        <div class="form-group">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label for="task-category" class="label">Category</label>
-              <select id="task-category" class="input">
-                <!-- Categories will be dynamically inserted here -->
-              </select>
-            </div>
-
-            <div>
-              <label for="due-date" class="label">Due Date (Optional)</label>
-              <button type="button" id="due-date-button" class="button button-outline w-full" style="text-align: left;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                <span id="due-date-text">No due date</span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label for="task-priority" class="label">Priority (Optional)</label>
-              <select id="task-priority" class="input">
-                <option value="">No priority</option>
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
-              </select>
-            </div>
-
-            <div id="task-classes-container">
-              <label class="label">Classes</label>
-              <div id="task-classes" class="flex flex-wrap gap-2 p-2 border rounded-md bg-secondary/20 min-h-[42px]">
-                <!-- Classes will be dynamically inserted here -->
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex justify-end gap-2 pt-2">
-          <button type="button" class="button button-outline" data-close="new-task-dialog">Cancel</button>
-          <button type="submit" class="button button-default">Add Task</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- New Category Dialog -->
-  <div id="new-category-dialog" class="dialog-overlay" style="display: none;">
-    <div class="dialog">
-      <div class="dialog-header">
-        <h2 class="dialog-title">Create New Category</h2>
-        <button class="dialog-close button button-ghost button-icon" data-close="new-category-dialog">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
-      </div>
-      
-      <form id="new-category-form" class="space-y-4">
-        <div class="form-group">
-          <label for="category-name" class="label">Category Name</label>
-          <input type="text" id="category-name" class="input" placeholder="Enter category name" required>
-        </div>
-
-        <div class="form-group">
-          <label class="label">Category Color</label>
-          <div class="color-picker" id="category-color-picker">
-            <!-- Color options will be dynamically inserted here -->
-          </div>
-        </div>
-
-        <div id="custom-color-container" class="form-group" style="display: none;">
-          <label for="custom-color" class="label">Custom Color</label>
-          <div class="flex gap-2 items-center">
-            <div id="custom-color-preview" class="w-8 h-8 rounded-full"></div>
-            <input type="color" id="custom-color" class="input">
-          </div>
-        </div>
-
-        <div class="flex justify-end gap-2">
-          <button type="button" class="button button-outline" data-close="new-category-dialog">Cancel</button>
-          <button type="submit" class="button button-default">Create Category</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- New Class Dialog -->
-  <div id="new-class-dialog" class="dialog-overlay" style="display: none;">
-    <div class="dialog">
-      <div class="dialog-header">
-        <h2 class="dialog-title">Create New Class</h2>
-        <button class="dialog-close button button-ghost button-icon" data-close="new-class-dialog">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
-      </div>
-      
-      <form id="new-class-form" class="space-y-4">
-        <div class="form-group">
-          <label for="class-name" class="label">Class Name</label>
-          <input type="text" id="class-name" class="input" placeholder="Enter class name" required>
-        </div>
-
-        <div class="form-group">
-          <label class="label">Class Color</label>
-          <div class="color-picker" id="class-color-picker">
-            <!-- Color options will be dynamically inserted here -->
-          </div>
-        </div>
-
-        <div id="class-custom-color-container" class="form-group" style="display: none;">
-          <label for="class-custom-color" class="label">Custom Color</label>
-          <div class="flex gap-2 items-center">
-            <div id="class-custom-color-preview" class="w-8 h-8 rounded-full"></div>
-            <input type="color" id="class-custom-color" class="input">
-          </div>
-        </div>
-
-        <div class="flex justify-end gap-2">
-          <button type="button" class="button button-outline" data-close="new-class-dialog">Cancel</button>
-          <button type="submit" class="button button-default">Create Class</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Date Picker Dialog -->
-  <div id="date-picker-dialog" class="dialog-overlay" style="display: none;">
-    <div class="dialog">
-      <div class="dialog-header">
-        <h2 class="dialog-title">Select Due Date</h2>
-        <button class="dialog-close button button-ghost button-icon" data-close="date-picker-dialog">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
-      </div>
-      
-      <div class="calendar-popup">
-        <div class="calendar-header">
-          <button id="prev-month" class="button button-outline button-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        <div class="dropdown">
+          <button class="button button-sm button-outline dropdown-trigger" id="sort-dropdown-trigger">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.25rem;"><path d="m3 16 4 4 4-4"></path><path d="M7 20V4"></path><path d="m21 8-4-4-4 4"></path><path d="M17 4v16"></path></svg>
+            Sort
           </button>
-          <div class="calendar-title" id="calendar-title">April 2025</div>
-          <button id="next-month" class="button button-outline button-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          <div class="dropdown-menu" id="sort-dropdown">
+            <div class="dropdown-item" data-sort="order">Manual Order</div>
+            <div class="dropdown-item" data-sort="title">Title</div>
+            <div class="dropdown-item" data-sort="dueDate">Due Date</div>
+            <div class="dropdown-item" data-sort="priority">Priority</div>
+          </div>
+        </div>
+
+        <div class="dropdown">
+          <button class="button button-sm button-outline dropdown-trigger" id="priority-dropdown-trigger">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.25rem;"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" x2="4" y1="22" y2="15"></line></svg>
+            Priority
           </button>
+          <div class="dropdown-menu" id="priority-dropdown">
+            <div class="dropdown-item" data-priority="all">All</div>
+            <div class="dropdown-item" data-priority="high">High</div>
+            <div class="dropdown-item" data-priority="medium">Medium</div>
+            <div class="dropdown-item" data-priority="low">Low</div>
+          </div>
         </div>
-        
-        <div class="calendar-grid" id="calendar-weekdays">
-          <div class="calendar-weekday">Su</div>
-          <div class="calendar-weekday">Mo</div>
-          <div class="calendar-weekday">Tu</div>
-          <div class="calendar-weekday">We</div>
-          <div class="calendar-weekday">Th</div>
-          <div class="calendar-weekday">Fr</div>
-          <div class="calendar-weekday">Sa</div>
-        </div>
-        
-        <div class="calendar-grid" id="calendar-days">
-          <!-- Calendar days will be dynamically inserted here -->
-        </div>
+      </div>
 
-        <div class="flex justify-between mt-4">
-          <button id="clear-date" class="button button-outline button-sm">Clear</button>
-          <button id="select-date" class="button button-default button-sm">Select</button>
-        </div>
+      <div id="task-list"></div>
+    </div>
+  </div>
+
+  <!-- Task Modal -->
+  <div class="modal-overlay" id="task-modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">New Task</h3>
+        <button class="modal-close" aria-label="Close modal">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="task-form">
+          <div class="form-group">
+            <label class="label" for="task-title">Title</label>
+            <input type="text" class="input" id="task-title" required>
+          </div>
+
+          <div class="form-group">
+            <label class="label" for="task-category">Category</label>
+            <select class="input" id="task-category">
+              <option value="default">Uncategorized</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="label">Classes</label>
+            <div id="task-classes"></div>
+          </div>
+
+          <div class="form-group">
+            <label class="label" for="task-due-date">Due Date</label>
+            <div class="datepicker">
+              <input type="text" class="input" id="task-due-date" placeholder="Select a date" readonly>
+              <div class="calendar" id="task-calendar"></div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="label" for="task-priority">Priority</label>
+            <select class="input" id="task-priority">
+              <option value="">None</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="button button-outline" id="cancel-task-btn">Cancel</button>
+        <button class="button button-primary" id="save-task-btn">Save</button>
       </div>
     </div>
   </div>
 
-  <!-- Delete Confirmation Dialog -->
-  <div id="delete-confirmation-dialog" class="dialog-overlay" style="display: none;">
-    <div class="dialog">
-      <div class="dialog-header">
-        <h2 class="dialog-title" id="delete-title">Delete Item</h2>
+  <!-- Category Modal -->
+  <div class="modal-overlay" id="category-modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">New Category</h3>
+        <button class="modal-close" aria-label="Close modal">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+        </button>
       </div>
-      
-      <div class="space-y-4">
-        <p id="delete-message">Are you sure you want to delete this item?</p>
-        
-        <div class="flex justify-end gap-2">
-          <button type="button" class="button button-outline" data-close="delete-confirmation-dialog">Cancel</button>
-          <button type="button" id="confirm-delete" class="button button-destructive">Delete</button>
-        </div>
+      <div class="modal-body">
+        <form id="category-form">
+          <div class="form-group">
+            <label class="label" for="category-name">Name</label>
+            <input type="text" class="input" id="category-name" required>
+          </div>
+
+          <div class="form-group">
+            <label class="label" for="category-color">Color</label>
+            <input type="color" class="input" id="category-color" value="#6941c6">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="button button-outline" id="cancel-category-btn">Cancel</button>
+        <button class="button button-primary" id="save-category-btn">Save</button>
       </div>
     </div>
   </div>
 
-  <!-- Focus Timer -->
-  <div id="focus-timer-container" class="focus-mode" style="display: none;">
-    <div class="focus-timer">
-      <button class="button button-ghost button-icon absolute right-4 top-4" id="close-focus-timer">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-      </button>
-      
-      <h2 class="text-xl font-bold mb-2" id="focus-timer-mode">Focus Time</h2>
-      
-      <div id="focus-current-task" class="mb-6" style="display: none;">
-        <p class="text-muted-foreground">Current task:</p>
-        <p class="font-medium" id="focus-task-title"></p>
-      </div>
-      
-      <div class="timer-display" id="timer-display">25:00</div>
-      <div class="timer-progress mb-6">
-        <div id="timer-progress-bar" class="progress-bar" style="width: 0%"></div>
-      </div>
-      
-      <div class="timer-controls">
-        <button id="timer-toggle" class="button button-outline timer-button">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
-        </button>
-        
-        <button id="timer-reset" class="button button-outline timer-button">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+  <!-- Class Modal -->
+  <div class="modal-overlay" id="class-modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">New Class</h3>
+        <button class="modal-close" aria-label="Close modal">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
         </button>
       </div>
-      
-      <div class="text-center text-sm text-muted-foreground mt-6">
-        <p id="timer-cycle">Cycle: 1</p>
-        <p class="mt-1" id="timer-instruction">
-          Stay focused on your task
-        </p>
+      <div class="modal-body">
+        <form id="class-form">
+          <div class="form-group">
+            <label class="label" for="class-name">Name</label>
+            <input type="text" class="input" id="class-name" required>
+          </div>
+
+          <div class="form-group">
+            <label class="label" for="class-color">Color</label>
+            <input type="color" class="input" id="class-color" value="#f97316">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="button button-outline" id="cancel-class-btn">Cancel</button>
+        <button class="button button-primary" id="save-class-btn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Task Detail Modal -->
+  <div class="modal-overlay" id="task-detail-modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" id="task-detail-title"></h3>
+        <button class="modal-close" aria-label="Close modal">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="task-detail" id="task-detail"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="button button-outline" id="close-task-detail-btn">Close</button>
+        <button class="button button-primary" id="edit-task-btn">Edit</button>
       </div>
     </div>
   </div>
 
   <!-- Toast Container -->
-  <div id="toast-container"></div>
+  <div class="toast-container" id="toast-container"></div>
 
   <script>
-    // Data storage
-    const app = {
-      tasks: [],
-      categories: [
-        { id: "default", name: "Uncategorized", color: "#9b87f5" },
-        { id: "work", name: "Work", color: "#9b87f5" },
-        { id: "personal", name: "Personal", color: "#6E59A5" }
-      ],
-      customClasses: [
-        { id: "important", name: "Important", color: "#f97316" },
-        { id: "urgent", name: "Urgent", color: "#ea384c" }
-      ],
-      activeCategory: null,
-      activeTask: null,
-      filterCompleted: null,
-      filterPriority: null,
-      searchTerm: '',
-      sortField: 'order',
-      sortDirection: 'asc',
-      nextId: 1,
-      selectedDate: null,
-      currentMonth: new Date(),
-      deleteConfirmation: {
-        type: null,
-        id: null
-      }
-    };
+    // Task, Category, and Class data structures
+    let tasks = [];
+    let categories = [];
+    let customClasses = [];
+    
+    // State
+    let activeCategory = null;
+    let activeTask = null;
+    let filterCompleted = null;
+    let searchTerm = "";
+    let sortField = "order";
+    let sortDirection = "asc";
+    let filterPriority = null;
 
-    // Color presets
-    const PRESET_COLORS = [
-      "#9b87f5", // Primary purple
-      "#6E59A5", // Secondary purple
-      "#ea384c", // Red
-      "#f97316", // Orange
-      "#0EA5E9", // Blue
-      "#10B981", // Green
-    ];
+    // Timer state
+    let timerInterval;
+    let timerMinutes = 25;
+    let timerSeconds = 0;
+    let timerRunning = false;
+    
+    // Element references
+    const taskListEl = document.getElementById("task-list");
+    const categoryListEl = document.getElementById("category-list");
+    const classListEl = document.getElementById("class-list");
+    const searchInputEl = document.getElementById("search-input");
+    const sortDropdownTriggerEl = document.getElementById("sort-dropdown-trigger");
+    const sortDropdownEl = document.getElementById("sort-dropdown");
+    const priorityDropdownTriggerEl = document.getElementById("priority-dropdown-trigger");
+    const priorityDropdownEl = document.getElementById("priority-dropdown");
+    const filterButtonsEl = document.querySelector(".filter-buttons");
+    
+    // Modal elements
+    const taskModalOverlayEl = document.getElementById("task-modal-overlay");
+    const categoryModalOverlayEl = document.getElementById("category-modal-overlay");
+    const classModalOverlayEl = document.getElementById("class-modal-overlay");
+    const taskDetailModalOverlayEl = document.getElementById("task-detail-modal-overlay");
+    
+    // Forms
+    const taskFormEl = document.getElementById("task-form");
+    const categoryFormEl = document.getElementById("category-form");
+    const classFormEl = document.getElementById("class-form");
+    
+    // Timer elements
+    const timerDisplayEl = document.querySelector(".timer-display");
+    const startTimerBtnEl = document.getElementById("start-timer");
+    const resetTimerBtnEl = document.getElementById("reset-timer");
+    
+    // Buttons
+    const addTaskBtnEl = document.getElementById("add-task-btn");
+    const saveTaskBtnEl = document.getElementById("save-task-btn");
+    const cancelTaskBtnEl = document.getElementById("cancel-task-btn");
+    const addCategoryBtnEl = document.getElementById("add-category-btn");
+    const saveCategoryBtnEl = document.getElementById("save-category-btn");
+    const cancelCategoryBtnEl = document.getElementById("cancel-category-btn");
+    const addClassBtnEl = document.getElementById("add-class-btn");
+    const saveClassBtnEl = document.getElementById("save-class-btn");
+    const cancelClassBtnEl = document.getElementById("cancel-class-btn");
+    const closeTaskDetailBtnEl = document.getElementById("close-task-detail-btn");
+    const editTaskBtnEl = document.getElementById("edit-task-btn");
+    
+    // Modal close buttons
+    const modalCloseBtns = document.querySelectorAll(".modal-close");
+    
+    // Sidebar elements
+    const sidebarEl = document.querySelector(".sidebar");
+    const sidebarToggleEl = document.querySelector(".sidebar-toggle");
+    const sidebarCloseEl = document.querySelector(".sidebar-close");
+    const sidebarOverlayEl = document.querySelector(".sidebar-overlay");
 
-    // Timer settings
-    const timer = {
-      focusTime: 25 * 60, // 25 minutes in seconds
-      breakTime: 5 * 60, // 5 minutes in seconds
-      timeLeft: 25 * 60,
-      isRunning: false,
-      mode: 'focus',
-      cycles: 0,
-      interval: null,
-      startTime: null,
-      maxTime: 25 * 60
-    };
-
-    // DOM Elements
-    const elements = {
-      categoriesList: document.getElementById('categories-list'),
-      tasksContainer: document.getElementById('tasks-container'),
-      noTasksMessage: document.getElementById('no-tasks-message'),
-      newTaskButton: document.getElementById('new-task-button'),
-      newCategoryButton: document.getElementById('new-category-button'),
-      newClassButton: document.getElementById('new-class-button'),
-      newTaskDialog: document.getElementById('new-task-dialog'),
-      newCategoryDialog: document.getElementById('new-category-dialog'),
-      newClassDialog: document.getElementById('new-class-dialog'),
-      datePickerDialog: document.getElementById('date-picker-dialog'),
-      deleteConfirmationDialog: document.getElementById('delete-confirmation-dialog'),
-      focusTimerContainer: document.getElementById('focus-timer-container'),
-      focusModeButton: document.getElementById('focus-mode-button'),
-      closeFocusTimer: document.getElementById('close-focus-timer'),
-      timerToggle: document.getElementById('timer-toggle'),
-      timerReset: document.getElementById('timer-reset'),
-      timerDisplay: document.getElementById('timer-display'),
-      timerProgressBar: document.getElementById('timer-progress-bar'),
-      timerCycle: document.getElementById('timer-cycle'),
-      timerInstruction: document.getElementById('timer-instruction'),
-      focusTimerMode: document.getElementById('focus-timer-mode'),
-      focusCurrentTask: document.getElementById('focus-current-task'),
-      focusTaskTitle: document.getElementById('focus-task-title'),
-      closeButtons: document.querySelectorAll('[data-close]'),
-      searchInput: document.getElementById('search-input'),
-      filterButtons: document.querySelectorAll('.filter-button'),
-      priorityDropdown: document.getElementById('priority-dropdown'),
-      sortDropdown: document.getElementById('sort-dropdown'),
-      tabs: document.querySelectorAll('.tab'),
-      tabContents: document.querySelectorAll('.tab-content'),
-      statsContent: document.getElementById('stats-content'),
-      classesContent: document.getElementById('classes-content'),
-      classesList: document.getElementById('classes-list'),
-      taskTitle: document.getElementById('task-title'),
-      taskDescription: document.getElementById('task-description'),
-      taskCategory: document.getElementById('task-category'),
-      taskPriority: document.getElementById('task-priority'),
-      taskClasses: document.getElementById('task-classes'),
-      dueDateButton: document.getElementById('due-date-button'),
-      dueDateText: document.getElementById('due-date-text'),
-      newTaskForm: document.getElementById('new-task-form'),
-      newCategoryForm: document.getElementById('new-category-form'),
-      newClassForm: document.getElementById('new-class-form'),
-      categoryName: document.getElementById('category-name'),
-      categoryColorPicker: document.getElementById('category-color-picker'),
-      customColorContainer: document.getElementById('custom-color-container'),
-      customColor: document.getElementById('custom-color'),
-      customColorPreview: document.getElementById('custom-color-preview'),
-      className: document.getElementById('class-name'),
-      classColorPicker: document.getElementById('class-color-picker'),
-      classCustomColorContainer: document.getElementById('class-custom-color-container'),
-      classCustomColor: document.getElementById('class-custom-color'),
-      classCustomColorPreview: document.getElementById('class-custom-color-preview'),
-      prevMonth: document.getElementById('prev-month'),
-      nextMonth: document.getElementById('next-month'),
-      calendarTitle: document.getElementById('calendar-title'),
-      calendarDays: document.getElementById('calendar-days'),
-      clearDate: document.getElementById('clear-date'),
-      selectDate: document.getElementById('select-date'),
-      deleteTitle: document.getElementById('delete-title'),
-      deleteMessage: document.getElementById('delete-message'),
-      confirmDelete: document.getElementById('confirm-delete'),
-      totalTasks: document.getElementById('total-tasks'),
-      completedTasks: document.getElementById('completed-tasks'),
-      pendingTasks: document.getElementById('pending-tasks'),
-      progressPercent: document.getElementById('progress-percent'),
-      progressBar: document.getElementById('progress-bar')
-    };
-
-    // Initialize the application
-    function initialize() {
-      loadFromLocalStorage();
-      renderCategories();
-      renderColorPickers();
-      renderTaskCategories();
-      renderTaskClasses();
-      renderTasks();
-      renderClasses();
-      updateStats();
-      setupEventListeners();
-    }
-
-    // Local Storage Functions
-    function loadFromLocalStorage() {
-      try {
-        const savedTasks = localStorage.getItem('tasks');
-        const savedCategories = localStorage.getItem('categories');
-        const savedClasses = localStorage.getItem('customClasses');
-        
-        if (savedTasks) {
-          app.tasks = JSON.parse(savedTasks);
-          // Ensure dates are properly parsed
-          app.tasks.forEach(task => {
-            if (task.dueDate) {
-              task.dueDate = new Date(task.dueDate);
-            }
-            if (task.createdAt) {
-              task.createdAt = new Date(task.createdAt);
-            }
-          });
-        }
-        
-        if (savedCategories) {
-          app.categories = JSON.parse(savedCategories);
-        }
-        
-        if (savedClasses) {
-          app.customClasses = JSON.parse(savedClasses);
-        }
-        
-        // Find the highest ID to set nextId
-        let maxId = 0;
-        app.tasks.forEach(task => {
-          const idNumber = parseInt(task.id.replace('task-', ''));
-          if (idNumber > maxId) maxId = idNumber;
-        });
-        app.categories.forEach(category => {
-          if (category.id !== 'default') {
-            const idNumber = parseInt(category.id.replace('category-', ''));
-            if (idNumber > maxId) maxId = idNumber;
-          }
-        });
-        app.customClasses.forEach(cls => {
-          const idNumber = parseInt(cls.id.replace('class-', ''));
-          if (idNumber > maxId) maxId = idNumber;
-        });
-        
-        app.nextId = maxId + 1;
-      } catch (error) {
-        console.error('Error loading data from localStorage:', error);
-      }
-    }
-
-    function saveToLocalStorage() {
-      localStorage.setItem('tasks', JSON.stringify(app.tasks));
-      localStorage.setItem('categories', JSON.stringify(app.categories));
-      localStorage.setItem('customClasses', JSON.stringify(app.customClasses));
-    }
-
-    // Rendering Functions
-    function renderCategories() {
-      elements.categoriesList.innerHTML = '';
-      
-      // Add All Tasks button
-      const allTasksButton = document.createElement('button');
-      allTasksButton.className = `category-button ${app.activeCategory === null ? 'active' : 'button-ghost'}`;
-      allTasksButton.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-        <span class="flex-1 text-left">All Tasks</span>
-        <span class="category-count">${app.tasks.length}</span>
-      `;
-      allTasksButton.addEventListener('click', () => {
-        app.activeCategory = null;
-        renderCategories();
-        renderTasks();
-      });
-      elements.categoriesList.appendChild(allTasksButton);
-      
-      // Render each category
-      app.categories.forEach(category => {
-        const categoryContainer = document.createElement('div');
-        categoryContainer.className = 'flex items-center';
-        
-        const categoryButton = document.createElement('button');
-        categoryButton.className = `category-button ${app.activeCategory === category.id ? 'active' : 'button-ghost'}`;
-        categoryButton.style.borderRadius = category.id !== 'default' ? '0.75rem 0 0 0.75rem' : '0.75rem';
-        categoryButton.style.flex = '1';
-        
-        const taskCount = app.tasks.filter(task => task.categoryId === category.id).length;
-        
-        categoryButton.innerHTML = `
-          <span class="category-color" style="background-color: ${category.color}"></span>
-          <span class="flex-1 text-left">${category.name}</span>
-          <span class="category-count">${taskCount}</span>
-        `;
-        
-        categoryButton.addEventListener('click', () => {
-          app.activeCategory = category.id;
-          renderCategories();
-          renderTasks();
-        });
-        
-        categoryContainer.appendChild(categoryButton);
-        
-        // Add delete button for non-default categories
-        if (category.id !== 'default') {
-          const deleteButton = document.createElement('button');
-          deleteButton.className = 'button button-ghost button-icon h-10 w-8';
-          deleteButton.style.borderRadius = '0 0.75rem 0.75rem 0';
-          deleteButton.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-destructive"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
-          `;
-          deleteButton.addEventListener('click', () => {
-            showDeleteConfirmation('category', category.id, category.name);
-          });
-          categoryContainer.appendChild(deleteButton);
-        }
-        
-        elements.categoriesList.appendChild(categoryContainer);
-      });
-    }
-
-    function renderTasks() {
-      // First filter tasks
-      let filteredTasks = app.activeCategory
-        ? app.tasks.filter(task => task.categoryId === app.activeCategory)
-        : app.tasks;
-        
-      if (app.searchTerm) {
-        filteredTasks = filteredTasks.filter(task => 
-          task.title.toLowerCase().includes(app.searchTerm.toLowerCase())
-        );
-      }
-      
-      if (app.filterCompleted !== null) {
-        filteredTasks = filteredTasks.filter(task => task.completed === app.filterCompleted);
-      }
-      
-      if (app.filterPriority) {
-        filteredTasks = filteredTasks.filter(task => task.priority === app.filterPriority);
-      }
-      
-      // Then sort tasks
-      filteredTasks.sort((a, b) => {
-        if (app.sortField === 'order') {
-          return app.sortDirection === 'asc' ? a.order - b.order : b.order - a.order;
-        }
-        
-        if (app.sortField === 'title') {
-          if (!a.title || !b.title) return 0;
-          return app.sortDirection === 'asc' 
-            ? a.title.localeCompare(b.title) 
-            : b.title.localeCompare(a.title);
-        }
-        
-        if (app.sortField === 'dueDate') {
-          if (!a.dueDate && !b.dueDate) return 0;
-          if (!a.dueDate) return app.sortDirection === 'asc' ? 1 : -1;
-          if (!b.dueDate) return app.sortDirection === 'asc' ? -1 : 1;
-          
-          return app.sortDirection === 'asc' 
-            ? a.dueDate.getTime() - b.dueDate.getTime() 
-            : b.dueDate.getTime() - a.dueDate.getTime();
-        }
-        
-        if (app.sortField === 'priority') {
-          const priorityOrder = { high: 3, medium: 2, low: 1, undefined: 0 };
-          const priorityA = a.priority ? priorityOrder[a.priority] : 0;
-          const priorityB = b.priority ? priorityOrder[b.priority] : 0;
-          
-          return app.sortDirection === 'asc' ? priorityA - priorityB : priorityB - priorityA;
-        }
-        
-        return 0;
-      });
-      
-      // Show/hide no tasks message
-      elements.noTasksMessage.style.display = filteredTasks.length === 0 ? 'block' : 'none';
-      
-      // Clear and render tasks
-      elements.tasksContainer.innerHTML = '';
-      filteredTasks.forEach(task => {
-        const taskElement = createTaskElement(task);
-        elements.tasksContainer.appendChild(taskElement);
-      });
-      
-      // Update the focus mode button visibility
-      elements.focusModeButton.style.display = app.activeTask ? 'flex' : 'none';
-    }
-
-    function createTaskElement(task) {
-      const taskElement = document.createElement('div');
-      taskElement.id = `task-${task.id}`;
-      taskElement.className = `task-card ${task.completed ? 'completed' : ''} ${task.priority ? `priority-${task.priority}` : ''}`;
-      taskElement.setAttribute('draggable', 'true');
-      
-      // Get the category and classes for this task
-      const category = app.categories.find(cat => cat.id === task.categoryId);
-      const taskClasses = task.classIds ? app.customClasses.filter(cls => task.classIds.includes(cls.id)) : [];
-      
-      // Check if task is due soon or overdue
-      const dueSoonClass = isTaskDueSoon(task) ? 'due-soon' : '';
-      const overdueClass = isTaskOverdue(task) ? 'overdue' : '';
-      
-      taskElement.innerHTML = `
-        <div class="drag-handle">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground"><circle cx="12" cy="4" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="20" r="1"/><circle cx="4" cy="4" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="20" r="1"/><circle cx="20" cy="4" r="1"/><circle cx="20" cy="12" r="1"/><circle cx="20" cy="20" r="1"/></svg>
-        </div>
-        
-        <button class="button button-ghost button-icon p-0 h-6 w-6 task-checkbox">
-          ${task.completed ? 
-            `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary"><path d="M20 6 9 17l-5-5"/></svg>` : 
-            `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>`
-          }
-        </button>
-
-        <div class="flex-1">
-          <div class="task-title ${task.completed ? 'task-completed' : ''}">${task.title}</div>
-          
-          <div class="task-meta">
-            ${category ? 
-              `<span class="category-pill" style="background-color: ${category.color}20; color: ${category.color}">
-                ${category.name}
-              </span>` : ''
-            }
-            
-            ${taskClasses.map(cls => 
-              `<span class="class-badge" style="background-color: ${cls.color}20; color: ${cls.color}">
-                ${cls.name}
-              </span>`
-            ).join('')}
-            
-            ${task.priority ? 
-              `<span class="flex items-center gap-1 text-xs">
-                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${
-                  task.priority === 'high' ? 'text-red-500' : 
-                  task.priority === 'medium' ? 'text-amber-500' : 
-                  'text-blue-500'
-                }"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
-                <span>${task.priority}</span>
-              </span>` : ''
-            }
-          </div>
-          
-          ${task.dueDate ? 
-            `<div class="task-due-date ${dueSoonClass} ${overdueClass}">
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-              <span>${isTaskOverdue(task) ? 'Overdue: ' : 'Due: '}${formatDate(task.dueDate)}</span>
-            </div>` : ''
-          }
-        </div>
-
-        <div class="task-actions">
-          <button class="button button-ghost button-icon edit-task-button">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
-          </button>
-          <button class="button button-ghost button-icon delete-task-button text-destructive">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
-          </button>
-        </div>
-      `;
-      
-      // Add event listeners
-      const checkbox = taskElement.querySelector('.task-checkbox');
-      checkbox.addEventListener('click', () => {
-        toggleTaskCompletion(task.id);
-      });
-      
-      const editButton = taskElement.querySelector('.edit-task-button');
-      editButton.addEventListener('click', () => {
-        openEditTaskDialog(task);
-      });
-      
-      const deleteButton = taskElement.querySelector('.delete-task-button');
-      deleteButton.addEventListener('click', () => {
-        showDeleteConfirmation('task', task.id, task.title);
-      });
-      
-      taskElement.addEventListener('click', (e) => {
-        // Only set as active task if the click is not on a button or checkbox
-        if (!e.target.closest('button') && !e.target.closest('svg')) {
-          setActiveTask(task);
-        }
-      });
-      
-      // Drag and drop
-      taskElement.addEventListener('dragstart', (e) => {
-        e.dataTransfer.setData('text/plain', task.id);
-        taskElement.classList.add('dragging');
-      });
-      
-      taskElement.addEventListener('dragend', () => {
-        taskElement.classList.remove('dragging');
-      });
-      
-      return taskElement;
-    }
-
-    function renderColorPickers() {
-      // Category color picker
-      elements.categoryColorPicker.innerHTML = '';
-      PRESET_COLORS.forEach(color => {
-        const colorOption = document.createElement('button');
-        colorOption.type = 'button';
-        colorOption.className = 'color-option';
-        colorOption.style.backgroundColor = color;
-        colorOption.dataset.color = color;
-        
-        colorOption.addEventListener('click', () => {
-          const selectedOptions = elements.categoryColorPicker.querySelectorAll('.selected');
-          selectedOptions.forEach(option => option.classList.remove('selected'));
-          colorOption.classList.add('selected');
-          elements.customColorContainer.style.display = 'none';
-        });
-        
-        elements.categoryColorPicker.appendChild(colorOption);
-      });
-      
-      // Add custom color option
-      const customOption = document.createElement('button');
-      customOption.type = 'button';
-      customOption.className = 'color-option';
-      customOption.style.backgroundColor = 'white';
-      customOption.style.border = '1px solid #d1d5db';
-      customOption.innerHTML = '+';
-      
-      customOption.addEventListener('click', () => {
-        const selectedOptions = elements.categoryColorPicker.querySelectorAll('.selected');
-        selectedOptions.forEach(option => option.classList.remove('selected'));
-        customOption.classList.add('selected');
-        elements.customColorContainer.style.display = 'block';
-        elements.customColor.value = PRESET_COLORS[0];
-        elements.customColorPreview.style.backgroundColor = PRESET_COLORS[0];
-      });
-      
-      elements.categoryColorPicker.appendChild(customOption);
-      
-      // Select first color by default
-      const firstColorOption = elements.categoryColorPicker.querySelector('.color-option');
-      firstColorOption.classList.add('selected');
-      
-      // Class color picker (same logic)
-      elements.classColorPicker.innerHTML = '';
-      PRESET_COLORS.forEach(color => {
-        const colorOption = document.createElement('button');
-        colorOption.type = 'button';
-        colorOption.className = 'color-option';
-        colorOption.style.backgroundColor = color;
-        colorOption.dataset.color = color;
-        
-        colorOption.addEventListener('click', () => {
-          const selectedOptions = elements.classColorPicker.querySelectorAll('.selected');
-          selectedOptions.forEach(option => option.classList.remove('selected'));
-          colorOption.classList.add('selected');
-          elements.classCustomColorContainer.style.display = 'none';
-        });
-        
-        elements.classColorPicker.appendChild(colorOption);
-      });
-      
-      // Add custom color option for class
-      const classCustomOption = document.createElement('button');
-      classCustomOption.type = 'button';
-      classCustomOption.className = 'color-option';
-      classCustomOption.style.backgroundColor = 'white';
-      classCustomOption.style.border = '1px solid #d1d5db';
-      classCustomOption.innerHTML = '+';
-      
-      classCustomOption.addEventListener('click', () => {
-        const selectedOptions = elements.classColorPicker.querySelectorAll('.selected');
-        selectedOptions.forEach(option => option.classList.remove('selected'));
-        classCustomOption.classList.add('selected');
-        elements.classCustomColorContainer.style.display = 'block';
-        elements.classCustomColor.value = PRESET_COLORS[0];
-        elements.classCustomColorPreview.style.backgroundColor = PRESET_COLORS[0];
-      });
-      
-      elements.classColorPicker.appendChild(classCustomOption);
-      
-      // Select first color by default for class
-      const firstClassColorOption = elements.classColorPicker.querySelector('.color-option');
-      firstClassColorOption.classList.add('selected');
-    }
-
-    function renderTaskCategories() {
-      elements.taskCategory.innerHTML = '';
-      app.categories.forEach(category => {
-        const option = document.createElement('option');
-        option.value = category.id;
-        option.textContent = category.name;
-        elements.taskCategory.appendChild(option);
-      });
-      
-      // Set active category as selected
-      if (app.activeCategory) {
-        elements.taskCategory.value = app.activeCategory;
-      }
-    }
-
-    function renderTaskClasses() {
-      elements.taskClasses.innerHTML = '';
-      
-      if (app.customClasses.length === 0) {
-        const message = document.createElement('div');
-        message.className = 'text-muted-foreground text-xs';
-        message.textContent = 'No classes defined';
-        elements.taskClasses.appendChild(message);
-        return;
-      }
-      
-      app.customClasses.forEach(cls => {
-        const badge = document.createElement('span');
-        badge.className = 'class-badge';
-        badge.dataset.classId = cls.id;
-        badge.style.backgroundColor = `${cls.color}20`;
-        badge.style.color = cls.color;
-        badge.textContent = cls.name;
-        
-        badge.addEventListener('click', () => {
-          badge.classList.toggle('selected');
-        });
-        
-        elements.taskClasses.appendChild(badge);
+    // Date picker
+    const dueDateInputEl = document.getElementById("task-due-date");
+    const calendarEl = document.getElementById("task-calendar");
+    
+    // Utility functions
+    function generateUUID() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
       });
     }
     
-    function renderClasses() {
-      elements.classesList.innerHTML = '';
-      
-      if (app.customClasses.length === 0) {
-        const message = document.createElement('div');
-        message.className = 'text-center py-8 text-muted-foreground';
-        message.innerHTML = `
-          <p>No custom classes yet</p>
-          <button id="create-first-class" class="button button-link mt-2">Create your first class</button>
-        `;
-        elements.classesList.appendChild(message);
-        
-        document.getElementById('create-first-class').addEventListener('click', () => {
-          showDialog(elements.newClassDialog);
-        });
-        return;
-      }
-      
-      app.customClasses.forEach(cls => {
-        const classItem = document.createElement('div');
-        classItem.className = 'flex items-center justify-between p-3 bg-card rounded-lg';
-        classItem.innerHTML = `
-          <div class="flex items-center gap-2">
-            <span class="h-4 w-4 rounded-full" style="background-color: ${cls.color}"></span>
-            <span>${cls.name}</span>
-          </div>
-          <div class="flex gap-1">
-            <button class="button button-ghost button-icon edit-class-button" data-class-id="${cls.id}">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
-            </button>
-            <button class="button button-ghost button-icon delete-class-button text-destructive" data-class-id="${cls.id}">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
-            </button>
-          </div>
-        `;
-        
-        const editButton = classItem.querySelector('.edit-class-button');
-        editButton.addEventListener('click', () => {
-          openEditClassDialog(cls);
-        });
-        
-        const deleteButton = classItem.querySelector('.delete-class-button');
-        deleteButton.addEventListener('click', () => {
-          showDeleteConfirmation('class', cls.id, cls.name);
-        });
-        
-        elements.classesList.appendChild(classItem);
-      });
-    }
-
-    function renderCalendar() {
-      const year = app.currentMonth.getFullYear();
-      const month = app.currentMonth.getMonth();
-      elements.calendarTitle.textContent = `${app.currentMonth.toLocaleString('default', { month: 'long' })} ${year}`;
-      
-      // Clear days
-      elements.calendarDays.innerHTML = '';
-      
-      // Get the first day of the month and how many days in the month
-      const firstDay = new Date(year, month, 1).getDay();
-      const daysInMonth = new Date(year, month + 1, 0).getDate();
-      
-      // Add empty cells for days before the first day of the month
-      for (let i = 0; i < firstDay; i++) {
-        const emptyDay = document.createElement('div');
-        emptyDay.className = 'calendar-day';
-        elements.calendarDays.appendChild(emptyDay);
-      }
-      
-      // Add days of the month
-      const today = new Date();
-      for (let day = 1; day <= daysInMonth; day++) {
-        const dayElement = document.createElement('div');
-        dayElement.className = 'calendar-day';
-        dayElement.textContent = day;
-        
-        const currentDate = new Date(year, month, day);
-        
-        // Add classes for today and selected date
-        if (today.getFullYear() === year && 
-            today.getMonth() === month && 
-            today.getDate() === day) {
-          dayElement.classList.add('today');
-        }
-        
-        if (app.selectedDate && 
-            app.selectedDate.getFullYear() === year && 
-            app.selectedDate.getMonth() === month && 
-            app.selectedDate.getDate() === day) {
-          dayElement.classList.add('selected');
-        }
-        
-        dayElement.addEventListener('click', () => {
-          app.selectedDate = new Date(year, month, day);
-          renderCalendar();
-        });
-        
-        elements.calendarDays.appendChild(dayElement);
-      }
-    }
-
-    function updateStats() {
-      const totalTasks = app.tasks.length;
-      const completedTasks = app.tasks.filter(task => task.completed).length;
-      const pendingTasks = totalTasks - completedTasks;
-      const completedPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-      
-      elements.totalTasks.textContent = totalTasks;
-      elements.completedTasks.textContent = completedTasks;
-      elements.pendingTasks.textContent = pendingTasks;
-      elements.progressPercent.textContent = `${completedPercentage}%`;
-      elements.progressBar.style.width = `${completedPercentage}%`;
-    }
-
-    // Event Listeners
-    function setupEventListeners() {
-      // Dialog open buttons
-      elements.newTaskButton.addEventListener('click', () => {
-        resetNewTaskForm();
-        showDialog(elements.newTaskDialog);
-      });
-      
-      elements.newCategoryButton.addEventListener('click', () => {
-        resetNewCategoryForm();
-        showDialog(elements.newCategoryDialog);
-      });
-      
-      elements.newClassButton.addEventListener('click', () => {
-        resetNewClassForm();
-        showDialog(elements.newClassDialog);
-      });
-      
-      elements.dueDateButton.addEventListener('click', () => {
-        showDialog(elements.datePickerDialog);
-        renderCalendar();
-      });
-      
-      // Dialog close buttons
-      elements.closeButtons.forEach(button => {
-        button.addEventListener('click', () => {
-          const dialogId = button.getAttribute('data-close');
-          hideDialog(document.getElementById(dialogId));
-        });
-      });
-      
-      // Form submissions
-      elements.newTaskForm.addEventListener('submit', handleNewTaskSubmit);
-      elements.newCategoryForm.addEventListener('submit', handleNewCategorySubmit);
-      elements.newClassForm.addEventListener('submit', handleNewClassSubmit);
-      
-      // Custom color inputs
-      elements.customColor.addEventListener('input', () => {
-        elements.customColorPreview.style.backgroundColor = elements.customColor.value;
-      });
-      
-      elements.classCustomColor.addEventListener('input', () => {
-        elements.classCustomColorPreview.style.backgroundColor = elements.classCustomColor.value;
-      });
-      
-      // Filter and search
-      elements.searchInput.addEventListener('input', () => {
-        app.searchTerm = elements.searchInput.value;
-        renderTasks();
-      });
-      
-      elements.filterButtons.forEach(button => {
-        button.addEventListener('click', () => {
-          const filter = button.dataset.filter;
-          
-          elements.filterButtons.forEach(btn => {
-            btn.classList.remove('button-default');
-            btn.classList.add('button-outline');
-          });
-          
-          button.classList.add('button-default');
-          button.classList.remove('button-outline');
-          
-          app.filterCompleted = filter === 'all' ? null : (filter === 'completed');
-          renderTasks();
-        });
-      });
-      
-      // Dropdowns
-      document.addEventListener('click', (e) => {
-        const dropdowns = document.querySelectorAll('.dropdown.open');
-        dropdowns.forEach(dropdown => {
-          if (!dropdown.contains(e.target)) {
-            dropdown.classList.remove('open');
-          }
-        });
-      });
-      
-      const dropdownTriggers = document.querySelectorAll('.dropdown-trigger');
-      dropdownTriggers.forEach(trigger => {
-        trigger.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const dropdown = trigger.closest('.dropdown');
-          dropdown.classList.toggle('open');
-        });
-      });
-      
-      // Priority filter
-      const priorityItems = elements.priorityDropdown.querySelectorAll('.dropdown-item');
-      priorityItems.forEach(item => {
-        item.addEventListener('click', () => {
-          const priority = item.dataset.priority;
-          app.filterPriority = priority === 'all' ? null : priority;
-          elements.priorityDropdown.querySelector('.dropdown-trigger').textContent = 
-            priority === 'all' ? 'Priority' : `Priority: ${priority.charAt(0).toUpperCase() + priority.slice(1)}`;
-          renderTasks();
-        });
-      });
-      
-      // Sort dropdown
-      const sortItems = elements.sortDropdown.querySelectorAll('.dropdown-item');
-      sortItems.forEach(item => {
-        item.addEventListener('click', () => {
-          const sortField = item.dataset.sort;
-          if (app.sortField === sortField) {
-            // Toggle direction if same field
-            app.sortDirection = app.sortDirection === 'asc' ? 'desc' : 'asc';
-          } else {
-            app.sortField = sortField;
-            app.sortDirection = 'asc';
-          }
-          
-          const directionIcon = app.sortDirection === 'asc' ? 
-            '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m3 8 4-4 4 4"></path><path d="M7 4v16"></path><path d="M11 12h4"></path><path d="M11 16h7"></path><path d="M11 20h10"></path></svg>' :
-            '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-1"><path d="m3 16 4 4 4-4"></path><path d="M7 20V4"></path><path d="M11 4h10"></path><path d="M11 8h7"></path><path d="M11 12h4"></path></svg>';
-          
-          const sortNames = {
-            order: 'Manual Order',
-            title: 'Title',
-            dueDate: 'Due Date',
-            priority: 'Priority'
-          };
-          
-          elements.sortDropdown.querySelector('.dropdown-trigger').innerHTML = 
-            `${directionIcon} Sort: ${sortNames[app.sortField]}`;
-          renderTasks();
-        });
-      });
-      
-      // Tabs
-      elements.tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-          const tabName = tab.getAttribute('data-tab');
-          
-          // Update tab active state
-          elements.tabs.forEach(t => t.classList.remove('active'));
-          tab.classList.add('active');
-          
-          // Update content visibility
-          elements.tabContents.forEach(content => {
-            content.classList.remove('active');
-          });
-          
-          document.getElementById(`${tabName}-content`).classList.add('active');
-        });
-      });
-      
-      // Calendar navigation
-      elements.prevMonth.addEventListener('click', () => {
-        app.currentMonth = new Date(app.currentMonth.getFullYear(), app.currentMonth.getMonth() - 1);
-        renderCalendar();
-      });
-      
-      elements.nextMonth.addEventListener('click', () => {
-        app.currentMonth = new Date(app.currentMonth.getFullYear(), app.currentMonth.getMonth() + 1);
-        renderCalendar();
-      });
-      
-      elements.clearDate.addEventListener('click', () => {
-        app.selectedDate = null;
-        elements.dueDateText.textContent = 'No due date';
-        hideDialog(elements.datePickerDialog);
-      });
-      
-      elements.selectDate.addEventListener('click', () => {
-        if (app.selectedDate) {
-          elements.dueDateText.textContent = formatDate(app.selectedDate);
-        }
-        hideDialog(elements.datePickerDialog);
-      });
-      
-      // Delete confirmation
-      elements.confirmDelete.addEventListener('click', handleDeleteConfirm);
-      
-      // Focus timer
-      elements.focusModeButton.addEventListener('click', () => {
-        showFocusTimer();
-      });
-      
-      elements.closeFocusTimer.addEventListener('click', () => {
-        hideFocusTimer();
-      });
-      
-      elements.timerToggle.addEventListener('click', toggleTimer);
-      elements.timerReset.addEventListener('click', resetTimer);
-    }
-
-    // Task Actions
-    function addTask(taskData) {
-      const newTask = {
-        id: `task-${app.nextId++}`,
-        title: taskData.title,
-        description: taskData.description || '',
-        completed: false,
-        categoryId: taskData.categoryId || 'default',
-        classIds: taskData.classIds || [],
-        dueDate: taskData.dueDate || null,
-        priority: taskData.priority || null,
-        order: app.tasks.length,
-        createdAt: new Date()
-      };
-      
-      app.tasks.push(newTask);
-      saveToLocalStorage();
-      renderTasks();
-      updateStats();
-      showToast(`Task created`, `"${newTask.title}" has been added to your tasks`);
-    }
-
-    function updateTask(taskId, updatedData) {
-      const taskIndex = app.tasks.findIndex(task => task.id === taskId);
-      if (taskIndex !== -1) {
-        app.tasks[taskIndex] = {
-          ...app.tasks[taskIndex],
-          ...updatedData
-        };
-        
-        saveToLocalStorage();
-        renderTasks();
-        updateStats();
-        showToast(`Task updated`, `"${app.tasks[taskIndex].title}" has been updated`);
-      }
-    }
-
-    function deleteTask(taskId) {
-      const taskToDelete = app.tasks.find(task => task.id === taskId);
-      if (taskToDelete) {
-        app.tasks = app.tasks.filter(task => task.id !== taskId);
-        
-        if (app.activeTask && app.activeTask.id === taskId) {
-          app.activeTask = null;
-        }
-        
-        saveToLocalStorage();
-        renderTasks();
-        updateStats();
-        showToast(`Task deleted`, `"${taskToDelete.title}" has been removed`);
-      }
-    }
-
-    function toggleTaskCompletion(taskId) {
-      const taskIndex = app.tasks.findIndex(task => task.id === taskId);
-      if (taskIndex !== -1) {
-        app.tasks[taskIndex].completed = !app.tasks[taskIndex].completed;
-        saveToLocalStorage();
-        renderTasks();
-        updateStats();
-      }
-    }
-
-    function setActiveTask(task) {
-      app.activeTask = task;
-      elements.focusModeButton.style.display = 'flex';
-      if (app.activeTask) {
-        elements.focusTaskTitle.textContent = app.activeTask.title;
-        elements.focusCurrentTask.style.display = 'block';
-      }
-    }
-
-    // Category Actions
-    function addCategory(categoryData) {
-      const newCategory = {
-        id: `category-${app.nextId++}`,
-        name: categoryData.name,
-        color: categoryData.color
-      };
-      
-      app.categories.push(newCategory);
-      saveToLocalStorage();
-      renderCategories();
-      renderTaskCategories();
-      showToast(`Category created`, `"${newCategory.name}" category has been created`);
-    }
-
-    function updateCategory(categoryId, updatedData) {
-      const categoryIndex = app.categories.findIndex(category => category.id === categoryId);
-      if (categoryIndex !== -1) {
-        app.categories[categoryIndex] = {
-          ...app.categories[categoryIndex],
-          ...updatedData
-        };
-        
-        saveToLocalStorage();
-        renderCategories();
-        renderTaskCategories();
-        renderTasks(); // Re-render tasks to update category pills
-        showToast(`Category updated`, `"${app.categories[categoryIndex].name}" has been updated`);
-      }
-    }
-
-    function deleteCategory(categoryId) {
-      const categoryToDelete = app.categories.find(category => category.id === categoryId);
-      if (categoryToDelete) {
-        // Move tasks to default category
-        app.tasks.forEach(task => {
-          if (task.categoryId === categoryId) {
-            task.categoryId = 'default';
-          }
-        });
-        
-        // Remove category
-        app.categories = app.categories.filter(category => category.id !== categoryId);
-        
-        // Update active category if needed
-        if (app.activeCategory === categoryId) {
-          app.activeCategory = null;
-        }
-        
-        saveToLocalStorage();
-        renderCategories();
-        renderTaskCategories();
-        renderTasks();
-        showToast(`Category deleted`, `"${categoryToDelete.name}" has been removed`);
-      }
-    }
-
-    // Class Actions
-    function addClass(classData) {
-      const newClass = {
-        id: `class-${app.nextId++}`,
-        name: classData.name,
-        color: classData.color
-      };
-      
-      app.customClasses.push(newClass);
-      saveToLocalStorage();
-      renderClasses();
-      renderTaskClasses();
-      showToast(`Class created`, `"${newClass.name}" class has been created`);
-    }
-
-    function updateClass(classId, updatedData) {
-      const classIndex = app.customClasses.findIndex(cls => cls.id === classId);
-      if (classIndex !== -1) {
-        app.customClasses[classIndex] = {
-          ...app.customClasses[classIndex],
-          ...updatedData
-        };
-        
-        saveToLocalStorage();
-        renderClasses();
-        renderTaskClasses();
-        renderTasks(); // Re-render tasks to update class badges
-        showToast(`Class updated`, `"${app.customClasses[classIndex].name}" has been updated`);
-      }
-    }
-
-    function deleteClass(classId) {
-      const classToDelete = app.customClasses.find(cls => cls.id === classId);
-      if (classToDelete) {
-        // Remove class from all tasks
-        app.tasks.forEach(task => {
-          task.classIds = task.classIds.filter(id => id !== classId);
-        });
-        
-        // Remove class
-        app.customClasses = app.customClasses.filter(cls => cls.id !== classId);
-        
-        saveToLocalStorage();
-        renderClasses();
-        renderTaskClasses();
-        renderTasks();
-        showToast(`Class deleted`, `"${classToDelete.name}" has been removed`);
-      }
-    }
-
-    // Form handlers
-    function handleNewTaskSubmit(e) {
-      e.preventDefault();
-      
-      // Get selected classes
-      const selectedClassIds = Array.from(elements.taskClasses.querySelectorAll('.class-badge.selected'))
-        .map(badge => badge.dataset.classId);
-      
-      addTask({
-        title: elements.taskTitle.value,
-        description: elements.taskDescription.value,
-        categoryId: elements.taskCategory.value,
-        classIds: selectedClassIds,
-        dueDate: app.selectedDate,
-        priority: elements.taskPriority.value || null
-      });
-      
-      hideDialog(elements.newTaskDialog);
-      resetNewTaskForm();
-    }
-
-    function handleNewCategorySubmit(e) {
-      e.preventDefault();
-      
-      const selectedColorOption = elements.categoryColorPicker.querySelector('.color-option.selected');
-      let color;
-      
-      if (selectedColorOption.dataset.color) {
-        color = selectedColorOption.dataset.color;
-      } else {
-        color = elements.customColor.value;
-      }
-      
-      addCategory({
-        name: elements.categoryName.value,
-        color: color
-      });
-      
-      hideDialog(elements.newCategoryDialog);
-      resetNewCategoryForm();
-    }
-
-    function handleNewClassSubmit(e) {
-      e.preventDefault();
-      
-      const selectedColorOption = elements.classColorPicker.querySelector('.color-option.selected');
-      let color;
-      
-      if (selectedColorOption.dataset.color) {
-        color = selectedColorOption.dataset.color;
-      } else {
-        color = elements.classCustomColor.value;
-      }
-      
-      addClass({
-        name: elements.className.value,
-        color: color
-      });
-      
-      hideDialog(elements.newClassDialog);
-      resetNewClassForm();
-    }
-
-    function resetNewTaskForm() {
-      elements.taskTitle.value = '';
-      elements.taskDescription.value = '';
-      elements.taskCategory.value = app.activeCategory || 'default';
-      elements.taskPriority.value = '';
-      app.selectedDate = null;
-      elements.dueDateText.textContent = 'No due date';
-      
-      // Reset class selections
-      const selectedClasses = elements.taskClasses.querySelectorAll('.class-badge.selected');
-      selectedClasses.forEach(badge => badge.classList.remove('selected'));
-    }
-
-    function resetNewCategoryForm() {
-      elements.categoryName.value = '';
-      const firstColorOption = elements.categoryColorPicker.querySelector('.color-option');
-      const selectedOptions = elements.categoryColorPicker.querySelectorAll('.selected');
-      selectedOptions.forEach(option => option.classList.remove('selected'));
-      firstColorOption.classList.add('selected');
-      elements.customColorContainer.style.display = 'none';
-    }
-
-    function resetNewClassForm() {
-      elements.className.value = '';
-      const firstColorOption = elements.classColorPicker.querySelector('.color-option');
-      const selectedOptions = elements.classColorPicker.querySelectorAll('.selected');
-      selectedOptions.forEach(option => option.classList.remove('selected'));
-      firstColorOption.classList.add('selected');
-      elements.classCustomColorContainer.style.display = 'none';
-    }
-
-    function openEditTaskDialog(task) {
-      // Implement task editing
-      showToast('Edit Task', 'Task editing would be implemented here');
-      // For simplicity, not implementing full edit functionality
-    }
-
-    function openEditClassDialog(cls) {
-      // Implement class editing
-      showToast('Edit Class', 'Class editing would be implemented here');
-      // For simplicity, not implementing full edit functionality
-    }
-
-    // Helper Functions
-    function showDialog(dialog) {
-      dialog.style.display = 'flex';
-      document.body.style.overflow = 'hidden';
-    }
-
-    function hideDialog(dialog) {
-      dialog.style.display = 'none';
-      document.body.style.overflow = '';
-    }
-
-    function showDeleteConfirmation(type, id, name) {
-      app.deleteConfirmation.type = type;
-      app.deleteConfirmation.id = id;
-      
-      if (type === 'task') {
-        elements.deleteTitle.textContent = 'Delete Task';
-        elements.deleteMessage.textContent = `Are you sure you want to delete "${name}"?`;
-      } else if (type === 'category') {
-        elements.deleteTitle.textContent = 'Delete Category';
-        elements.deleteMessage.textContent = `Are you sure you want to delete "${name}" category? All tasks in this category will be moved to Uncategorized.`;
-      } else if (type === 'class') {
-        elements.deleteTitle.textContent = 'Delete Class';
-        elements.deleteMessage.textContent = `Are you sure you want to delete "${name}" class? This class will be removed from all tasks.`;
-      }
-      
-      showDialog(elements.deleteConfirmationDialog);
-    }
-
-    function handleDeleteConfirm() {
-      const { type, id } = app.deleteConfirmation;
-      
-      if (type === 'task') {
-        deleteTask(id);
-      } else if (type === 'category') {
-        deleteCategory(id);
-      } else if (type === 'class') {
-        deleteClass(id);
-      }
-      
-      hideDialog(elements.deleteConfirmationDialog);
-    }
-
-    function isTaskDueSoon(task) {
-      if (!task.dueDate) return false;
-      const dueDate = new Date(task.dueDate);
-      const now = new Date();
-      const timeDiff = dueDate.getTime() - now.getTime();
-      return timeDiff > 0 && timeDiff < 24 * 60 * 60 * 1000;
-    }
-
-    function isTaskOverdue(task) {
-      if (!task.dueDate) return false;
-      const dueDate = new Date(task.dueDate);
-      const now = new Date();
-      return dueDate < now;
-    }
-
     function formatDate(date) {
-      return date.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
-      });
+      if (!date) return "";
+      const d = new Date(date);
+      return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
     }
-
-    function showToast(title, message, duration = 3000) {
-      const toastContainer = document.getElementById('toast-container');
+    
+    function showToast(title, description = "", duration = 3000) {
+      const toastContainer = document.getElementById("toast-container");
+      const toast = document.createElement("div");
+      toast.className = "toast";
       
-      const toast = document.createElement('div');
-      toast.className = 'toast';
       toast.innerHTML = `
-        <div class="toast-header">${title}</div>
-        <div class="toast-body">${message}</div>
+        <div class="toast-content">
+          <div class="toast-title">${title}</div>
+          ${description ? `<div class="toast-description">${description}</div>` : ""}
+        </div>
+        <button class="toast-close" aria-label="Close toast">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+        </button>
       `;
       
       toastContainer.appendChild(toast);
       
+      const closeBtn = toast.querySelector(".toast-close");
+      closeBtn.addEventListener("click", () => {
+        toast.remove();
+      });
+      
       setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateX(100%)';
-        toast.style.transition = 'opacity 0.3s, transform 0.3s';
-        
-        setTimeout(() => {
-          toastContainer.removeChild(toast);
-        }, 300);
+        toast.remove();
       }, duration);
     }
-
-    // Focus Timer Functions
-    function showFocusTimer() {
-      elements.focusTimerContainer.style.display = 'flex';
-      resetTimer();
+    
+    function openModal(modalEl) {
+      modalEl.classList.add("open");
+    }
+    
+    function closeModal(modalEl) {
+      modalEl.classList.remove("open");
+    }
+    
+    function closeAllModals() {
+      document.querySelectorAll(".modal-overlay").forEach(modal => {
+        closeModal(modal);
+      });
     }
 
-    function hideFocusTimer() {
-      elements.focusTimerContainer.style.display = 'none';
-      if (timer.interval) {
-        clearInterval(timer.interval);
-        timer.interval = null;
-        timer.isRunning = false;
+    function closeAllDropdowns() {
+      document.querySelectorAll(".dropdown-menu").forEach(dropdown => {
+        dropdown.classList.remove("open");
+      });
+    }
+
+    // Load data from localStorage
+    function loadData() {
+      // Load categories
+      const savedCategories = localStorage.getItem("categories");
+      categories = savedCategories ? JSON.parse(savedCategories) : [
+        { id: "default", name: "Uncategorized", color: "#9b87f5" },
+        { id: "work", name: "Work", color: "#9b87f5" },
+        { id: "personal", name: "Personal", color: "#6E59A5" },
+      ];
+      
+      // Load classes
+      const savedClasses = localStorage.getItem("customClasses");
+      customClasses = savedClasses ? JSON.parse(savedClasses) : [
+        { id: "important", name: "Important", color: "#f97316" },
+        { id: "urgent", name: "Urgent", color: "#ea384c" },
+      ];
+      
+      // Load tasks
+      const savedTasks = localStorage.getItem("tasks");
+      tasks = savedTasks ? JSON.parse(savedTasks) : [];
+      
+      // Render everything
+      renderCategories();
+      renderClasses();
+      renderTasks();
+      updateTaskCount();
+    }
+    
+    // Save data to localStorage
+    function saveData() {
+      localStorage.setItem("categories", JSON.stringify(categories));
+      localStorage.setItem("customClasses", JSON.stringify(customClasses));
+      localStorage.setItem("tasks", JSON.stringify(tasks));
+      updateTaskCount();
+    }
+    
+    // Render tasks to the DOM
+    function renderTasks() {
+      // Clear existing tasks
+      taskListEl.innerHTML = "";
+      
+      // Filter tasks
+      let filteredTasks = activeCategory && activeCategory !== "all"
+        ? tasks.filter(task => task.categoryId === activeCategory)
+        : tasks;
+      
+      if (searchTerm) {
+        filteredTasks = filteredTasks.filter(task => 
+          task.title.toLowerCase().includes(searchTerm.toLowerCase())
+        );
       }
-    }
-
-    function toggleTimer() {
-      if (timer.isRunning) {
-        pauseTimer();
-      } else {
-        startTimer();
+      
+      if (filterCompleted !== null) {
+        filteredTasks = filteredTasks.filter(task => task.completed === filterCompleted);
       }
-    }
+      
+      if (filterPriority && filterPriority !== "all") {
+        filteredTasks = filteredTasks.filter(task => task.priority === filterPriority);
+      }
+      
+      // Sort tasks
+      filteredTasks.sort((a, b) => {
+        if (sortField === "order") {
+          return sortDirection === "asc" ? a.order - b.order : b.order - a.order;
+        }
+        
+        if (sortField === "title") {
+          if (!a.title || !b.title) return 0;
+          return sortDirection === "asc" 
+            ? a.title.localeCompare(b.title) 
+            : b.title.localeCompare(a.title);
+        }
+        
+        if (sortField === "dueDate") {
+          if (!a.dueDate && !b.dueDate) return 0;
+          if (!a.dueDate) return sortDirection === "asc" ? 1 : -1;
+          if (!b.dueDate) return sortDirection === "asc" ? -1 : 1;
+          
+          const dateA = new Date(a.dueDate).getTime();
+          const dateB = new Date(b.dueDate).getTime();
+          return sortDirection === "asc" ? dateA - dateB : dateB - dateA;
+        }
+        
+        if (sortField === "priority") {
+          const priorityOrder = { high: 3, medium: 2, low: 1, undefined: 0 };
+          const priorityA = priorityOrder[a.priority] || 0;
+          const priorityB = priorityOrder[b.priority] || 0;
+          
+          return sortDirection === "asc" ? priorityA - priorityB : priorityB - priorityA;
+        }
+        
+        return 0;
+      });
 
-    function startTimer() {
-      timer.isRunning = true;
-      timer.startTime = Date.now() - (timer.maxTime - timer.timeLeft) * 1000;
-      
-      elements.timerToggle.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="10" y1="15" x2="10" y2="9"></line><line x1="14" y1="15" x2="14" y2="9"></line></svg>
-      `;
-      
-      timer.interval = setInterval(updateTimer, 1000);
-    }
-
-    function pauseTimer() {
-      timer.isRunning = false;
-      clearInterval(timer.interval);
-      timer.interval = null;
-      
-      elements.timerToggle.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
-      `;
-    }
-
-    function updateTimer() {
-      timer.timeLeft = Math.max(0, Math.round((timer.startTime + timer.maxTime * 1000 - Date.now()) / 1000));
-      
-      if (timer.timeLeft <= 0) {
-        pauseTimer();
-        switchMode();
+      // Display no tasks message if needed
+      if (filteredTasks.length === 0) {
+        taskListEl.innerHTML = `
+          <div class="text-center py-10 text-muted-foreground">
+            <div style="display: flex; justify-content: center; margin-bottom: 8px;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 6H3"></path><path d="M10 12H3"></path><path d="M10 18H3"></path><path d="m16 12 2 2 4-4"></path></svg>
+            </div>
+            <p>No tasks found</p>
+          </div>
+        `;
         return;
       }
       
-      updateTimerDisplay();
+      // Create task list with drag and drop capability
+      filteredTasks.forEach((task, index) => {
+        const category = categories.find(cat => cat.id === task.categoryId);
+        const taskClasses = customClasses.filter(cls => task.classIds && task.classIds.includes(cls.id));
+        
+        const taskEl = document.createElement("div");
+        taskEl.className = `task-card ${task.completed ? 'task-completed' : ''} ${task.priority ? 'priority-' + task.priority : ''}`;
+        taskEl.setAttribute("data-id", task.id);
+        taskEl.setAttribute("draggable", true);
+        
+        // Check if task is due soon (within next 24 hours) or overdue
+        const isTaskDueSoon = () => {
+          if (!task.dueDate) return false;
+          const dueDate = new Date(task.dueDate);
+          const now = new Date();
+          const timeDiff = dueDate.getTime() - now.getTime();
+          return timeDiff > 0 && timeDiff < 24 * 60 * 60 * 1000;
+        };
+        
+        const isTaskOverdue = () => {
+          if (!task.dueDate) return false;
+          const dueDate = new Date(task.dueDate);
+          return dueDate < new Date();
+        };
+        
+        taskEl.innerHTML = `
+          <div class="drag-handle">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+          </div>
+          
+          <button class="task-toggle button button-ghost button-icon-sm">
+            ${task.completed 
+              ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"></path></svg>' 
+              : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"></rect></svg>'
+            }
+          </button>
+
+          <div style="flex: 1;">
+            <div class="task-title">${task.title}</div>
+            <div class="task-meta">
+              ${category ? `<span class="category-pill" style="background-color: ${category.color}20; color: ${category.color};">${category.name}</span>` : ''}
+              ${taskClasses.map(cls => `<span class="class-badge" style="background-color: ${cls.color}20; color: ${cls.color};">${cls.name}</span>`).join('')}
+              
+              ${task.priority ? `
+                <span style="display: flex; align-items: center; gap: 4px; font-size: 0.75rem;">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="${task.priority === 'high' ? '#ef4444' : task.priority === 'medium' ? '#f59e0b' : '#3b82f6'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" x2="4" y1="22" y2="15"></line></svg>
+                  <span>${task.priority}</span>
+                </span>
+              ` : ''}
+            </div>
+            
+            ${task.dueDate ? `
+              <div style="font-size: 0.75rem; margin-top: 4px; display: flex; align-items: center; gap: 4px;" class="${isTaskOverdue() ? 'overdue' : isTaskDueSoon() ? 'due-soon' : ''}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <span>${isTaskOverdue() ? 'Overdue: ' : 'Due: '}${formatDate(task.dueDate)}</span>
+              </div>
+            ` : ''}
+          </div>
+
+          <div class="task-actions">
+            <button class="button button-ghost button-icon-sm task-edit-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            </button>
+            <button class="button button-ghost button-icon-sm task-delete-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-destructive"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+            </button>
+          </div>
+        `;
+        
+        taskListEl.appendChild(taskEl);
+        
+        // Add event listeners
+        const toggleBtn = taskEl.querySelector(".task-toggle");
+        toggleBtn.addEventListener("click", () => toggleTaskCompletion(task.id));
+        
+        const editBtn = taskEl.querySelector(".task-edit-btn");
+        editBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          editTask(task);
+        });
+        
+        const deleteBtn = taskEl.querySelector(".task-delete-btn");
+        deleteBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          deleteTask(task.id);
+        });
+        
+        // Open task detail on click
+        taskEl.addEventListener("click", (e) => {
+          if (!e.target.closest('.task-toggle, .task-edit-btn, .task-delete-btn, .drag-handle')) {
+            showTaskDetail(task);
+          }
+        });
+
+        // Drag and drop functionality
+        taskEl.addEventListener("dragstart", (e) => {
+          e.dataTransfer.setData("text/plain", task.id);
+          taskEl.classList.add("dragging");
+          setTimeout(() => {
+            taskEl.classList.add("opacity-50");
+          }, 0);
+        });
+
+        taskEl.addEventListener("dragend", () => {
+          taskEl.classList.remove("dragging");
+          taskEl.classList.remove("opacity-50");
+        });
+      });
+
+      // Make task list a drop target
+      taskListEl.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        const afterElement = getDragAfterElement(taskListEl, e.clientY);
+        const draggable = document.querySelector(".dragging");
+        if (draggable) {
+          if (afterElement == null) {
+            taskListEl.appendChild(draggable);
+          } else {
+            taskListEl.insertBefore(draggable, afterElement);
+          }
+        }
+      });
+
+      taskListEl.addEventListener("drop", (e) => {
+        e.preventDefault();
+        const taskId = e.dataTransfer.getData("text/plain");
+        const taskElements = Array.from(taskListEl.querySelectorAll(".task-card"));
+        
+        // Find the new position of the task
+        const newIndex = taskElements.findIndex(el => el.getAttribute("data-id") === taskId);
+        
+        // Update the order of all tasks
+        taskElements.forEach((el, index) => {
+          const id = el.getAttribute("data-id");
+          const taskIndex = tasks.findIndex(t => t.id === id);
+          if (taskIndex !== -1) {
+            tasks[taskIndex].order = index;
+          }
+        });
+        
+        saveData();
+      });
     }
 
-    function updateTimerDisplay() {
-      const minutes = Math.floor(timer.timeLeft / 60).toString().padStart(2, '0');
-      const seconds = (timer.timeLeft % 60).toString().padStart(2, '0');
-      elements.timerDisplay.textContent = `${minutes}:${seconds}`;
+    // Helper function for drag and drop to determine where to place element
+    function getDragAfterElement(container, y) {
+      const draggableElements = [...container.querySelectorAll(".task-card:not(.dragging)")];
       
-      const progress = 100 - (timer.timeLeft / timer.maxTime * 100);
-      elements.timerProgressBar.style.width = `${progress}%`;
+      return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        
+        if (offset < 0 && offset > closest.offset) {
+          return { offset, element: child };
+        } else {
+          return closest;
+        }
+      }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
 
-    function resetTimer() {
-      if (timer.interval) {
-        clearInterval(timer.interval);
-        timer.interval = null;
+    // Render categories to the DOM
+    function renderCategories() {
+      // Clear existing categories (except "All Tasks")
+      const allTasksItem = categoryListEl.querySelector('[data-id="all"]');
+      categoryListEl.innerHTML = '';
+      categoryListEl.appendChild(allTasksItem);
+      
+      // Add categories to dropdown
+      const categorySelectEl = document.getElementById("task-category");
+      categorySelectEl.innerHTML = '';
+      
+      categories.forEach(category => {
+        // Add to category list
+        const categoryItem = document.createElement("li");
+        categoryItem.className = `category-item ${activeCategory === category.id ? 'active' : ''}`;
+        categoryItem.setAttribute("data-id", category.id);
+        
+        categoryItem.innerHTML = `
+          <span class="category-color" style="background-color: ${category.color};"></span>
+          <span class="category-name">${category.name}</span>
+          <span class="category-count">${tasks.filter(task => task.categoryId === category.id).length}</span>
+        `;
+        
+        categoryListEl.appendChild(categoryItem);
+        
+        // Add to category dropdown
+        const option = document.createElement("option");
+        option.value = category.id;
+        option.textContent = category.name;
+        categorySelectEl.appendChild(option);
+      });
+      
+      // Add event listeners
+      document.querySelectorAll('.category-item').forEach(item => {
+        item.addEventListener("click", () => {
+          const categoryId = item.getAttribute("data-id");
+          activeCategory = categoryId === "all" ? null : categoryId;
+          
+          // Update active state
+          document.querySelectorAll('.category-item').forEach(el => {
+            el.classList.toggle("active", 
+              (categoryId === "all" && el.getAttribute("data-id") === "all") || 
+              el.getAttribute("data-id") === activeCategory
+            );
+          });
+          
+          renderTasks();
+        });
+      });
+    }
+    
+    // Render classes to the DOM
+    function renderClasses() {
+      // Clear existing classes
+      classListEl.innerHTML = '';
+      
+      customClasses.forEach(cls => {
+        // Add to class list
+        const classItem = document.createElement("li");
+        classItem.className = "category-item";
+        classItem.setAttribute("data-id", cls.id);
+        
+        classItem.innerHTML = `
+          <span class="category-color" style="background-color: ${cls.color};"></span>
+          <span class="category-name">${cls.name}</span>
+          <span class="category-count">${tasks.filter(task => task.classIds && task.classIds.includes(cls.id)).length}</span>
+        `;
+        
+        classListEl.appendChild(classItem);
+      });
+      
+      // Update task form classes
+      updateTaskFormClasses();
+    }
+    
+    // Update the task count for categories and classes
+    function updateTaskCount() {
+      // Update all tasks count
+      const allTasksItem = document.querySelector('.category-item[data-id="all"]');
+      if (allTasksItem) {
+        const countEl = allTasksItem.querySelector('.category-count');
+        countEl.textContent = tasks.length;
       }
       
-      timer.timeLeft = timer.mode === 'focus' ? timer.focusTime : timer.breakTime;
-      timer.maxTime = timer.timeLeft;
-      timer.isRunning = false;
+      // Update category counts
+      categories.forEach(category => {
+        const categoryItem = document.querySelector(`.category-item[data-id="${category.id}"]`);
+        if (categoryItem) {
+          const countEl = categoryItem.querySelector('.category-count');
+          countEl.textContent = tasks.filter(task => task.categoryId === category.id).length;
+        }
+      });
       
-      elements.timerToggle.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
+      // Update class counts
+      customClasses.forEach(cls => {
+        const classItem = document.querySelector(`.category-item[data-id="${cls.id}"]`);
+        if (classItem) {
+          const countEl = classItem.querySelector('.category-count');
+          countEl.textContent = tasks.filter(task => task.classIds && task.classIds.includes(cls.id)).length;
+        }
+      });
+    }
+    
+    // Update the task form classes checkboxes
+    function updateTaskFormClasses(selectedClassIds = []) {
+      const taskClassesEl = document.getElementById("task-classes");
+      taskClassesEl.innerHTML = '';
+      
+      customClasses.forEach(cls => {
+        const isChecked = selectedClassIds.includes(cls.id);
+        
+        const checkboxWrapper = document.createElement("div");
+        checkboxWrapper.className = "task-class-option";
+        checkboxWrapper.style.marginBottom = "8px";
+        checkboxWrapper.innerHTML = `
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+            <input type="checkbox" value="${cls.id}" ${isChecked ? 'checked' : ''}>
+            <span class="category-color" style="background-color: ${cls.color};"></span>
+            <span>${cls.name}</span>
+          </label>
+        `;
+        
+        taskClassesEl.appendChild(checkboxWrapper);
+      });
+    }
+    
+    // Task operations
+    function addTask(taskData) {
+      const newTask = {
+        id: generateUUID(),
+        title: taskData.title,
+        categoryId: taskData.categoryId || "default",
+        classIds: taskData.classIds || [],
+        completed: false,
+        createdAt: new Date().toISOString(),
+        dueDate: taskData.dueDate ? new Date(taskData.dueDate).toISOString() : null,
+        priority: taskData.priority || null,
+        order: tasks.length,
+      };
+      
+      tasks.push(newTask);
+      saveData();
+      renderTasks();
+      
+      showToast("Task created", `"${newTask.title}" has been added to your tasks`);
+    }
+    
+    function editTask(task) {
+      activeTask = task;
+      
+      // Populate form
+      document.getElementById("task-title").value = task.title;
+      document.getElementById("task-category").value = task.categoryId || "default";
+      document.getElementById("task-due-date").value = task.dueDate ? formatDate(task.dueDate) : "";
+      document.getElementById("task-priority").value = task.priority || "";
+      
+      // Update classes
+      updateTaskFormClasses(task.classIds || []);
+      
+      // Update modal title
+      document.querySelector("#task-modal-overlay .modal-title").textContent = "Edit Task";
+      
+      // Open modal
+      openModal(taskModalOverlayEl);
+    }
+    
+    function updateTask(taskData) {
+      if (!activeTask) return;
+      
+      const taskIndex = tasks.findIndex(task => task.id === activeTask.id);
+      if (taskIndex === -1) return;
+      
+      tasks[taskIndex] = {
+        ...tasks[taskIndex],
+        title: taskData.title,
+        categoryId: taskData.categoryId,
+        classIds: taskData.classIds,
+        dueDate: taskData.dueDate ? new Date(taskData.dueDate).toISOString() : null,
+        priority: taskData.priority,
+      };
+      
+      saveData();
+      renderTasks();
+      
+      showToast("Task updated", `"${taskData.title}" has been updated`);
+    }
+    
+    function deleteTask(taskId) {
+      const taskToDelete = tasks.find(task => task.id === taskId);
+      if (!taskToDelete) return;
+      
+      tasks = tasks.filter(task => task.id !== taskId);
+      saveData();
+      renderTasks();
+      
+      showToast("Task deleted", `"${taskToDelete.title}" has been removed`);
+    }
+    
+    function toggleTaskCompletion(taskId) {
+      const taskIndex = tasks.findIndex(task => task.id === taskId);
+      if (taskIndex === -1) return;
+      
+      tasks[taskIndex].completed = !tasks[taskIndex].completed;
+      saveData();
+      renderTasks();
+    }
+    
+    // Category operations
+    function addCategory(categoryData) {
+      const newCategory = {
+        id: generateUUID(),
+        name: categoryData.name,
+        color: categoryData.color,
+      };
+      
+      categories.push(newCategory);
+      saveData();
+      renderCategories();
+      
+      showToast("Category created", `"${newCategory.name}" category has been created`);
+    }
+    
+    // Class operations
+    function addClass(classData) {
+      const newClass = {
+        id: generateUUID(),
+        name: classData.name,
+        color: classData.color,
+      };
+      
+      customClasses.push(newClass);
+      saveData();
+      renderClasses();
+      
+      showToast("Class created", `"${newClass.name}" class has been created`);
+    }
+
+    // Task detail
+    function showTaskDetail(task) {
+      const taskDetailTitleEl = document.getElementById("task-detail-title");
+      const taskDetailEl = document.getElementById("task-detail");
+      
+      // Set the task as active
+      activeTask = task;
+      
+      // Set the title
+      taskDetailTitleEl.textContent = task.title;
+      
+      // Get task metadata
+      const category = categories.find(cat => cat.id === task.categoryId);
+      const taskClasses = customClasses.filter(cls => task.classIds && task.classIds.includes(cls.id));
+      
+      // Build the task detail content
+      taskDetailEl.innerHTML = `
+        <div class="task-detail-header">
+          <div class="task-detail-meta">
+            ${category ? `<span class="category-pill" style="background-color: ${category.color}20; color: ${category.color};">${category.name}</span>` : ''}
+            ${taskClasses.map(cls => `<span class="class-badge" style="background-color: ${cls.color}20; color: ${cls.color};">${cls.name}</span>`).join('')}
+            ${task.priority ? `
+              <span style="display: flex; align-items: center; gap: 4px; font-size: 0.75rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="${task.priority === 'high' ? '#ef4444' : task.priority === 'medium' ? '#f59e0b' : '#3b82f6'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" x2="4" y1="22" y2="15"></line></svg>
+                <span>${task.priority} priority</span>
+              </span>
+            ` : ''}
+          </div>
+        </div>
+
+        <div class="task-detail-section">
+          <div class="task-detail-section-title">Status</div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            ${task.completed 
+              ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"></path></svg><span>Completed</span>' 
+              : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"></rect></svg><span>Active</span>'
+            }
+          </div>
+        </div>
+        
+        ${task.dueDate ? `
+          <div class="task-detail-section">
+            <div class="task-detail-section-title">Due Date</div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line></svg>
+              <span>${formatDate(task.dueDate)}</span>
+            </div>
+          </div>
+        ` : ''}
+        
+        <div class="task-detail-section">
+          <div class="task-detail-section-title">Created</div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-1.5"></path><path d="M16 2v4"></path><path d="M8 2v4"></path><path d="M3 10h18"></path></svg>
+            <span>${formatDate(task.createdAt)}</span>
+          </div>
+        </div>
       `;
       
-      updateTimerDisplay();
+      // Open the modal
+      openModal(taskDetailModalOverlayEl);
     }
-
-    function switchMode() {
-      timer.mode = timer.mode === 'focus' ? 'break' : 'focus';
+    
+    // Date Picker
+    function initDatePicker() {
+      const monthNames = ["January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+      ];
+      const dayNames = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
       
-      if (timer.mode === 'focus') {
-        timer.cycles++;
-        elements.timerCycle.textContent = `Cycle: ${timer.cycles + 1}`;
-        timer.timeLeft = timer.focusTime;
-        elements.focusTimerMode.textContent = 'Focus Time';
-        elements.timerInstruction.textContent = 'Stay focused on your task';
-        showToast('Break ended', 'Time to focus again!');
-      } else {
-        timer.timeLeft = timer.breakTime;
-        elements.focusTimerMode.textContent = 'Break Time';
-        elements.timerInstruction.textContent = 'Take a short break';
-        showToast('Focus session completed', 'Take a short break.');
+      let currentDate = new Date();
+      let selectedDate = null;
+      
+      // Create calendar
+      function renderCalendar() {
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        
+        // Get first day of month and number of days
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        
+        // Get days from last month
+        const daysInPrevMonth = new Date(year, month, 0).getDate();
+        
+        // Create calendar header
+        calendarEl.innerHTML = `
+          <div class="calendar-header">
+            <button class="button button-ghost button-icon button-sm prev-month">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
+            </button>
+            <div>${monthNames[month]} ${year}</div>
+            <button class="button button-ghost button-icon button-sm next-month">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+            </button>
+          </div>
+          <div class="calendar-grid">
+            ${dayNames.map(day => `<div class="calendar-day-header">${day}</div>`).join('')}
+          </div>
+        `;
+        
+        // Get calendar grid
+        const calendarGrid = calendarEl.querySelector(".calendar-grid");
+        
+        // Add days from previous month
+        for (let i = firstDay - 1; i >= 0; i--) {
+          const dayEl = document.createElement("div");
+          dayEl.className = "calendar-day other-month";
+          dayEl.textContent = daysInPrevMonth - i;
+          calendarGrid.appendChild(dayEl);
+        }
+        
+        // Add days in current month
+        const today = new Date();
+        const isCurrentMonth = today.getMonth() === month && today.getFullYear() === year;
+        
+        for (let day = 1; day <= daysInMonth; day++) {
+          const dayDate = new Date(year, month, day);
+          
+          const dayEl = document.createElement("div");
+          dayEl.className = "calendar-day current-month";
+          dayEl.textContent = day;
+          
+          // Check if this day is today
+          if (isCurrentMonth && today.getDate() === day) {
+            dayEl.classList.add("today");
+          }
+          
+          // Check if this day is selected
+          if (selectedDate && 
+              selectedDate.getDate() === day && 
+              selectedDate.getMonth() === month && 
+              selectedDate.getFullYear() === year) {
+            dayEl.classList.add("selected");
+          }
+          
+          // Add click event to select the date
+          dayEl.addEventListener("click", () => {
+            selectedDate = dayDate;
+            dueDateInputEl.value = formatDate(dayDate);
+            calendarEl.classList.remove("open");
+            renderCalendar(); // Re-render to update selected date
+          });
+          
+          calendarGrid.appendChild(dayEl);
+        }
+        
+        // Add days from next month
+        const totalDaysAdded = firstDay + daysInMonth;
+        const nextMonthDays = Math.ceil(totalDaysAdded / 7) * 7 - totalDaysAdded;
+        
+        for (let day = 1; day <= nextMonthDays; day++) {
+          const dayEl = document.createElement("div");
+          dayEl.className = "calendar-day other-month";
+          dayEl.textContent = day;
+          calendarGrid.appendChild(dayEl);
+        }
+        
+        // Add event listeners for prev/next month
+        calendarEl.querySelector(".prev-month").addEventListener("click", () => {
+          currentDate.setMonth(currentDate.getMonth() - 1);
+          renderCalendar();
+        });
+        
+        calendarEl.querySelector(".next-month").addEventListener("click", () => {
+          currentDate.setMonth(currentDate.getMonth() + 1);
+          renderCalendar();
+        });
       }
       
-      timer.maxTime = timer.timeLeft;
+      // Initialize date picker
+      renderCalendar();
+      
+      // Show/hide calendar on click
+      dueDateInputEl.addEventListener("click", () => {
+        calendarEl.classList.toggle("open");
+        if (calendarEl.classList.contains("open")) {
+          renderCalendar();
+        }
+      });
+      
+      // Close calendar when clicking outside
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest(".datepicker") && calendarEl.classList.contains("open")) {
+          calendarEl.classList.remove("open");
+        }
+      });
+    }
+    
+    // Timer functionality
+    function initTimer() {
+      function updateTimerDisplay() {
+        const minutes = timerMinutes < 10 ? `0${timerMinutes}` : timerMinutes;
+        const seconds = timerSeconds < 10 ? `0${timerSeconds}` : timerSeconds;
+        timerDisplayEl.textContent = `${minutes}:${seconds}`;
+      }
+      
+      function startTimer() {
+        if (!timerRunning) {
+          timerRunning = true;
+          startTimerBtnEl.textContent = "Pause";
+          resetTimerBtnEl.disabled = false;
+          
+          timerInterval = setInterval(() => {
+            if (timerSeconds === 0) {
+              if (timerMinutes === 0) {
+                // Timer finished
+                clearInterval(timerInterval);
+                timerRunning = false;
+                startTimerBtnEl.textContent = "Start";
+                
+                // Play sound or show notification
+                showToast("Time's up!", "Your focus session has ended");
+                
+                // Reset timer
+                timerMinutes = 25;
+                timerSeconds = 0;
+                updateTimerDisplay();
+                return;
+              }
+              timerMinutes--;
+              timerSeconds = 59;
+            } else {
+              timerSeconds--;
+            }
+            
+            updateTimerDisplay();
+          }, 1000);
+        } else {
+          // Pause timer
+          clearInterval(timerInterval);
+          timerRunning = false;
+          startTimerBtnEl.textContent = "Resume";
+        }
+      }
+      
+      function resetTimer() {
+        clearInterval(timerInterval);
+        timerRunning = false;
+        timerMinutes = 25;
+        timerSeconds = 0;
+        updateTimerDisplay();
+        startTimerBtnEl.textContent = "Start";
+        resetTimerBtnEl.disabled = true;
+      }
+      
+      // Initialize timer display
       updateTimerDisplay();
+      
+      // Add event listeners
+      startTimerBtnEl.addEventListener("click", startTimer);
+      resetTimerBtnEl.addEventListener("click", resetTimer);
+    }
+    
+    // Initialize the app
+    function init() {
+      // Load data from localStorage
+      loadData();
+      
+      // Initialize date picker
+      initDatePicker();
+      
+      // Initialize timer
+      initTimer();
+      
+      // Event listeners
+      
+      // Search
+      searchInputEl.addEventListener("input", (e) => {
+        searchTerm = e.target.value;
+        renderTasks();
+      });
+      
+      // Filter buttons
+      filterButtonsEl.addEventListener("click", (e) => {
+        const filterBtn = e.target.closest("[data-filter]");
+        if (!filterBtn) return;
+        
+        const filter = filterBtn.getAttribute("data-filter");
+        filterCompleted = filter === "all" ? null : filter === "completed";
+        
+        // Update active state
+        document.querySelectorAll("[data-filter]").forEach(btn => {
+          if (btn.getAttribute("data-filter") === filter) {
+            btn.classList.remove("button-outline");
+            btn.classList.add("button-primary");
+          } else {
+            btn.classList.add("button-outline");
+            btn.classList.remove("button-primary");
+          }
+        });
+        
+        renderTasks();
+      });
+      
+      // Sort dropdown
+      sortDropdownTriggerEl.addEventListener("click", () => {
+        sortDropdownEl.classList.toggle("open");
+      });
+      
+      sortDropdownEl.addEventListener("click", (e) => {
+        const sortItem = e.target.closest("[data-sort]");
+        if (!sortItem) return;
+        
+        const newSortField = sortItem.getAttribute("data-sort");
+        
+        if (sortField === newSortField) {
+          // Toggle direction if same field
+          sortDirection = sortDirection === "asc" ? "desc" : "asc";
+        } else {
+          sortField = newSortField;
+          sortDirection = "asc";
+        }
+        
+        sortDropdownEl.classList.remove("open");
+        renderTasks();
+      });
+      
+      // Priority dropdown
+      priorityDropdownTriggerEl.addEventListener("click", () => {
+        priorityDropdownEl.classList.toggle("open");
+      });
+      
+      priorityDropdownEl.addEventListener("click", (e) => {
+        const priorityItem = e.target.closest("[data-priority]");
+        if (!priorityItem) return;
+        
+        filterPriority = priorityItem.getAttribute("data-priority");
+        if (filterPriority === "all") filterPriority = null;
+        
+        priorityDropdownEl.classList.remove("open");
+        renderTasks();
+      });
+      
+      // Close dropdowns when clicking outside
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest(".dropdown")) {
+          closeAllDropdowns();
+        }
+      });
+      
+      // Add Task
+      addTaskBtnEl.addEventListener("click", () => {
+        activeTask = null;
+        document.getElementById("task-form").reset();
+        document.getElementById("task-category").value = "default";
+        document.getElementById("task-due-date").value = "";
+        document.querySelector("#task-modal-overlay .modal-title").textContent = "New Task";
+        updateTaskFormClasses();
+        openModal(taskModalOverlayEl);
+      });
+      
+      saveTaskBtnEl.addEventListener("click", () => {
+        const title = document.getElementById("task-title").value.trim();
+        if (!title) return;
+        
+        const categoryId = document.getElementById("task-category").value;
+        const dueDate = document.getElementById("task-due-date").value;
+        const priority = document.getElementById("task-priority").value;
+        
+        // Get selected classes
+        const classCheckboxes = document.querySelectorAll('#task-classes input[type="checkbox"]:checked');
+        const classIds = Array.from(classCheckboxes).map(checkbox => checkbox.value);
+        
+        const taskData = {
+          title,
+          categoryId,
+          classIds,
+          dueDate: dueDate || null,
+          priority: priority || null,
+        };
+        
+        if (activeTask) {
+          updateTask(taskData);
+        } else {
+          addTask(taskData);
+        }
+        
+        closeModal(taskModalOverlayEl);
+      });
+      
+      cancelTaskBtnEl.addEventListener("click", () => {
+        closeModal(taskModalOverlayEl);
+      });
+      
+      // Add Category
+      addCategoryBtnEl.addEventListener("click", () => {
+        document.getElementById("category-form").reset();
+        document.getElementById("category-color").value = "#6941c6";
+        openModal(categoryModalOverlayEl);
+      });
+      
+      saveCategoryBtnEl.addEventListener("click", () => {
+        const name = document.getElementById("category-name").value.trim();
+        if (!name) return;
+        
+        const color = document.getElementById("category-color").value;
+        
+        addCategory({ name, color });
+        closeModal(categoryModalOverlayEl);
+      });
+      
+      cancelCategoryBtnEl.addEventListener("click", () => {
+        closeModal(categoryModalOverlayEl);
+      });
+      
+      // Add Class
+      addClassBtnEl.addEventListener("click", () => {
+        document.getElementById("class-form").reset();
+        document.getElementById("class-color").value = "#f97316";
+        openModal(classModalOverlayEl);
+      });
+      
+      saveClassBtnEl.addEventListener("click", () => {
+        const name = document.getElementById("class-name").value.trim();
+        if (!name) return;
+        
+        const color = document.getElementById("class-color").value;
+        
+        addClass({ name, color });
+        closeModal(classModalOverlayEl);
+      });
+      
+      cancelClassBtnEl.addEventListener("click", () => {
+        closeModal(classModalOverlayEl);
+      });
+      
+      // Task Detail
+      closeTaskDetailBtnEl.addEventListener("click", () => {
+        closeModal(taskDetailModalOverlayEl);
+      });
+      
+      editTaskBtnEl.addEventListener("click", () => {
+        closeModal(taskDetailModalOverlayEl);
+        if (activeTask) {
+          editTask(activeTask);
+        }
+      });
+      
+      // Modal close buttons
+      modalCloseBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+          closeAllModals();
+        });
+      });
+      
+      // Close modals when clicking overlay
+      document.querySelectorAll(".modal-overlay").forEach(overlay => {
+        overlay.addEventListener("click", (e) => {
+          if (e.target === overlay) {
+            closeModal(overlay);
+          }
+        });
+      });
+      
+      // Sidebar toggle
+      sidebarToggleEl.addEventListener("click", () => {
+        sidebarEl.classList.add("open");
+        sidebarOverlayEl.classList.add("open");
+      });
+      
+      sidebarCloseEl.addEventListener("click", () => {
+        sidebarEl.classList.remove("open");
+        sidebarOverlayEl.classList.remove("open");
+      });
+      
+      sidebarOverlayEl.addEventListener("click", () => {
+        sidebarEl.classList.remove("open");
+        sidebarOverlayEl.classList.remove("open");
+      });
+      
+      // Check if mobile
+      function checkMobile() {
+        if (window.innerWidth <= 768) {
+          sidebarToggleEl.style.display = "block";
+          sidebarEl.classList.remove("open");
+        } else {
+          sidebarToggleEl.style.display = "none";
+          sidebarEl.classList.remove("open");
+        }
+      }
+      
+      // Check on load and resize
+      checkMobile();
+      window.addEventListener("resize", checkMobile);
     }
 
-    // Initialize the application
-    initialize();
+    // Start the app
+    init();
   </script>
 </body>
 </html>
