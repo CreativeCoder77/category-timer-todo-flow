@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TaskFlow</title>
+  <style>
+    /* Reset and Base Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+    
+    :root {
+      --background: #f8f7fc;
+      --foreground: #1a1a1a;
+      --primary: #9b87f5;
+      --primary-light: #d5ccfc;
+      --primary-dark: #6E59A5;
+      --secondary: #f0eeff;
+      --accent: #6941c6;
+      --muted: #f1f5f9;
+      --muted-foreground: #64748b;
+      --border: #e2e8f0;
+      --destructive: #ef4444;
+      --card: #ffffff;
+      --radius: 0.5rem;
+    }
+    
+    body {
+      background-color: var(--background);
+      color: var(--foreground);
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    
+    /* Layout */
+    .app {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      height: 100vh;
+    }
+    
+    @media (max-width: 768px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+      
+      .sidebar {
+        position: fixed;
+        left: -280px;
+        transition: left 0.3s ease;
+        z-index: 50;
+        height: 100vh;
+      }
+      
+      .sidebar.show {
+        left: 0;
+      }
+      
+      .sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 40;
+      }
+      
+      .sidebar-overlay.show {
+        display: block;
+      }
+      
+      .sidebar-toggle {
+        display: block !important;
+      }
+    }
+    
+    /* Sidebar */
+    .sidebar {
+      background-color: var(--card);
+      border-right: 1px solid var(--border);
+      padding: 1.5rem;
+      overflow-y: auto;
+    }
+    
+    .sidebar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+    
+    .sidebar-toggle {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--foreground);
+    }
+    
+    /* Main Content */
+    .main {
+      padding: 1.5rem;
+      overflow-y: auto;
+    }
+    
+    .main-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    
+    /* Components */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius);
+      font-weight: 500;
+      font-size: 0.875rem;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--primary-dark);
+    }
+    
+    .btn-outline {
+      background-color: transparent;
+      border: 1px solid var(--border);
+      color: var(--foreground);
+    }
+    
+    .btn-outline:hover {
+      background-color: var(--secondary);
+    }
+    
+    .btn-sm {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+    }
+    
+    .btn-icon {
+      padding: 0.5rem;
+      justify-content: center;
+    }
+    
+    .btn-ghost {
+      background-color: transparent;
+      color: var(--foreground);
+    }
+    
+    .btn-ghost:hover {
+      background-color: var(--secondary);
+    }
+    
+    .btn-destructive {
+      background-color: var(--destructive);
+      color: white;
+    }
+    
+    .btn-destructive:hover {
+      opacity: 0.9;
+    }
+    
+    /* Form Elements */
+    .form-control {
+      margin-bottom: 1rem;
+    }
+    
+    .form-label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background-color: white;
+      font-size: 0.875rem;
+    }
+    
+    .form-input:focus {
+      outline: 2px solid var(--primary-light);
+      border-color: var(--primary);
+    }
+    
+    .form-select {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background-color: white;
+      font-size: 0.875rem;
+    }
+    
+    /* Focus Timer */
+    .focus-timer {
+      background-color: var(--secondary);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    
+    .timer-display {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    
+    .timer-actions {
+      display: flex;
+      justify-content: center;
+      gap: 0.75rem;
+    }
+    
+    /* Category List */
+    .category-section {
+      margin-bottom: 2rem;
+    }
+    
+    .section-title {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+    
+    .category-list {
+      list-style-type: none;
+    }
+    
+    .category-item {
+      display: flex;
+      align-items: center;
+      padding: 0.5rem;
+      border-radius: var(--radius);
+      cursor: pointer;
+      margin-bottom: 0.25rem;
+      transition: background-color 0.2s;
+    }
+    
+    .category-item:hover {
+      background-color: var(--secondary);
+    }
+    
+    .category-item.active {
+      background-color: var(--secondary);
+    }
+    
+    .category-color {
+      width: 0.75rem;
+      height: 0.75rem;
+      border-radius: 50%;
+      margin-right: 0.75rem;
+    }
+    
+    .category-name {
+      flex: 1;
+      font-size: 0.875rem;
+    }
+    
+    .category-count {
+      background-color: var(--secondary);
+      font-size: 0.75rem;
+      padding: 0 0.5rem;
+      border-radius: 1rem;
+      color: var(--muted-foreground);
+    }
+    
+    /* Filter Bar */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+    
+    .search-container {
+      flex: 1;
+      position: relative;
+    }
+    
+    .search-icon {
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted-foreground);
+      pointer-events: none;
+    }
+    
+    .search-input {
+      width: 100%;
+      padding: 0.5rem 0.5rem 0.5rem 2rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background-color: white;
+      font-size: 0.875rem;
+    }
+    
+    /* Dropdown */
+    .dropdown {
+      position: relative;
+    }
+    
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      min-width: 10rem;
+      background-color: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.5rem;
+      z-index: 10;
+      margin-top: 0.25rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .dropdown-menu.show {
+      display: block;
+      animation: fadeIn 0.2s;
+    }
+    
+    .dropdown-item {
+      padding: 0.375rem 0.5rem;
+      border-radius: calc(var(--radius) - 0.25rem);
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    
+    .dropdown-item:hover {
+      background-color: var(--secondary);
+    }
+    
+    /* Task Cards */
+    .task-list {
+      padding-bottom: 1rem;
+    }
+    
+    .task-card {
+      display: flex;
+      align-items: center;
+      background-color: white;
+      padding: 1rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      margin-bottom: 0.75rem;
+      transition: all 0.2s;
+      cursor: grab;
+    }
+    
+    .task-card.dragging {
+      opacity: 0.5;
+      background-color: var(--secondary);
+      cursor: grabbing;
+    }
+    
+    .task-card:hover {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    
+    .drag-handle {
+      cursor: grab;
+      margin-right: 0.5rem;
+      color: var(--muted-foreground);
+    }
+    
+    .task-card.dragging .drag-handle {
+      cursor: grabbing;
+    }
+    
+    .task-checkbox {
+      margin-right: 0.75rem;
+    }
+    
+    .task-content {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .task-title {
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+      font-size: 0.875rem;
+      word-break: break-word;
+    }
+    
+    .task-completed .task-title {
+      text-decoration: line-through;
+      color: var(--muted-foreground);
+    }
+    
+    .task-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    
+    .category-badge {
+      font-size: 0.75rem;
+      padding: 0.125rem 0.5rem;
+      border-radius: 1rem;
+      white-space: nowrap;
+    }
+    
+    .class-badge {
+      font-size: 0.75rem;
+      padding: 0.125rem 0.5rem;
+      border-radius: 1rem;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+    }
+    
+    .priority-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.75rem;
+    }
+    
+    .due-date {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.75rem;
+      white-space: nowrap;
+    }
+    
+    .due-soon {
+      color: #f59e0b;
+    }
+    
+    .overdue {
+      color: var(--destructive);
+    }
+    
+    .task-actions {
+      display: flex;
+      gap: 0.25rem;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    
+    .task-card:hover .task-actions {
+      opacity: 1;
+    }
+    
+    /* Priority Styles */
+    .priority-high {
+      border-left: 3px solid var(--destructive);
+    }
+    
+    .priority-medium {
+      border-left: 3px solid #f59e0b;
+    }
+    
+    .priority-low {
+      border-left: 3px solid #3b82f6;
+    }
+    
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    
+    .modal-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    
+    .modal {
+      background-color: white;
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: translateY(20px);
+      opacity: 0;
+      transition: transform 0.3s, opacity 0.3s;
+    }
+    
+    .modal-overlay.show .modal {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .modal-title {
+      font-weight: 600;
+      font-size: 1.125rem;
+    }
+    
+    .modal-close {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted-foreground);
+    }
+    
+    .modal-close:hover {
+      color: var(--foreground);
+    }
+    
+    .modal-body {
+      padding: 1.5rem;
+    }
+    
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+    
+    /* Toast Notifications */
+    .toast-container {
+      position: fixed;
+      bottom: 1rem;
+      right: 1rem;
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 0.5rem;
+      z-index: 100;
+    }
+    
+    .toast {
+      background-color: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.75rem 1rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      display: flex;
+      width: 18rem;
+      max-width: 90vw;
+      animation: slideRight 0.3s forwards;
+    }
+    
+    .toast-content {
+      flex: 1;
+    }
+    
+    .toast-title {
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+      font-size: 0.875rem;
+    }
+    
+    .toast-message {
+      font-size: 0.75rem;
+      color: var(--muted-foreground);
+    }
+    
+    .toast-close {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted-foreground);
+      margin-left: 0.5rem;
+    }
+    
+    /* Date Picker */
+    .date-picker {
+      position: relative;
+    }
+    
+    .calendar {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      z-index: 10;
+      background-color: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      width: 280px;
+      margin-top: 0.25rem;
+    }
+    
+    .calendar.show {
+      display: block;
+    }
+    
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+    
+    .calendar-title {
+      font-weight: 500;
+      font-size: 0.875rem;
+    }
+    
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+    }
+    
+    .day-name {
+      text-align: center;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--muted-foreground);
+      padding: 0.25rem;
+    }
+    
+    .day {
+      aspect-ratio: 1/1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.875rem;
+      border-radius: calc(var(--radius) - 0.25rem);
+      cursor: pointer;
+    }
+    
+    .day:hover:not(.outside-month):not(.selected) {
+      background-color: var(--secondary);
+    }
+    
+    .day.today {
+      font-weight: 700;
+      border: 1px solid var(--primary);
+    }
+    
+    .day.selected {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    .day.outside-month {
+      color: var(--muted-foreground);
+      opacity: 0.5;
+      cursor: default;
+    }
+    
+    /* Task Detail Styles */
+    .task-detail {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .task-detail-header {
+      margin-bottom: 0.5rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .task-detail-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    
+    .task-detail-section {
+      margin-bottom: 1rem;
+    }
+    
+    .task-detail-section-title {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--muted-foreground);
+      margin-bottom: 0.5rem;
+    }
+    
+    .task-detail-value {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+    }
+    
+    /* Class Checkboxes */
+    .class-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .class-option {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .class-option-name {
+      font-size: 0.875rem;
+    }
+    
+    /* No Tasks Message */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--muted-foreground);
+    }
+    
+    .empty-icon {
+      margin-bottom: 1rem;
+      display: inline-block;
+    }
+    
+    /* Animations */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(5px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes slideRight {
+      from {
+        opacity: 0;
+        transform: translateX(100%);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .modal {
+        width: 90%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2>TaskFlow</h2>
+        <button class="btn btn-ghost btn-icon sidebar-close" id="sidebar-close">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+        </button>
+      </div>
+      
+      <!-- Focus Timer -->
+      <div class="focus-timer">
+        <div class="timer-display" id="timer-display">25:00</div>
+        <div class="timer-actions">
+          <button class="btn btn-primary" id="start-timer">Start</button>
+          <button class="btn btn-outline" id="reset-timer" disabled>Reset</button>
+        </div>
+      </div>
+      
+      <!-- Categories -->
+      <div class="category-section">
+        <h3 class="section-title">Categories</h3>
+        <ul class="category-list" id="category-list">
+          <li class="category-item active" data-id="all">
+            <span class="category-name">All Tasks</span>
+            <span class="category-count" id="all-tasks-count">0</span>
+          </li>
+        </ul>
+        <button class="btn btn-outline" id="add-category-btn" style="width: 100%; margin-top: 0.5rem;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+          Add Category
+        </button>
+      </div>
+      
+      <!-- Classes -->
+      <div class="category-section">
+        <h3 class="section-title">Classes</h3>
+        <ul class="category-list" id="class-list"></ul>
+        <button class="btn btn-outline" id="add-class-btn" style="width: 100%; margin-top: 0.5rem;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+          Add Class
+        </button>
+      </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main">
+      <div class="main-header">
+        <button class="btn btn-ghost btn-icon sidebar-toggle" id="sidebar-toggle">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" x2="21" y1="6" y2="6"></line><line x1="3" x2="21" y1="12" y2="12"></line><line x1="3" x2="21" y1="18" y2="18"></line></svg>
+        </button>
+        
+        <h1>Tasks</h1>
+        
+        <button class="btn btn-primary" id="new-task-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+          New Task
+        </button>
+      </div>
+      
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <div class="search-container">
+          <div class="search-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+          </div>
+          <input type="text" class="search-input" id="search-input" placeholder="Search tasks...">
+        </div>
+        
+        <div class="filter-buttons">
+          <button class="btn btn-sm btn-primary" data-filter="all">All</button>
+          <button class="btn btn-sm btn-outline" data-filter="active">Active</button>
+          <button class="btn btn-sm btn-outline" data-filter="completed">Completed</button>
+        </div>
+        
+        <!-- Sort Dropdown -->
+        <div class="dropdown">
+          <button class="btn btn-sm btn-outline dropdown-trigger" id="sort-dropdown-trigger">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 16 4 4 4-4"></path><path d="M7 20V4"></path><path d="m21 8-4-4-4 4"></path><path d="M17 4v16"></path></svg>
+            Sort
+          </button>
+          <div class="dropdown-menu" id="sort-dropdown">
+            <div class="dropdown-item" data-sort="order">Manual Order</div>
+            <div class="dropdown-item" data-sort="title">Title</div>
+            <div class="dropdown-item" data-sort="dueDate">Due Date</div>
+            <div class="dropdown-item" data-sort="priority">Priority</div>
+          </div>
+        </div>
+        
+        <!-- Priority Dropdown -->
+        <div class="dropdown">
+          <button class="btn btn-sm btn-outline dropdown-trigger" id="priority-dropdown-trigger">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" x2="4" y1="22" y2="15"></line></svg>
+            Priority
+          </button>
+          <div class="dropdown-menu" id="priority-dropdown">
+            <div class="dropdown-item" data-priority="all">All</div>
+            <div class="dropdown-item" data-priority="high">High</div>
+            <div class="dropdown-item" data-priority="medium">Medium</div>
+            <div class="dropdown-item" data-priority="low">Low</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Task List -->
+      <div class="task-list" id="task-list"></div>
+    </main>
+  </div>
+  
+  <!-- Task Modal -->
+  <div class="modal-overlay" id="task-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" id="task-modal-title">New Task</h3>
+        <button class="modal-close" id="task-modal-close">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="task-form">
+          <div class="form-control">
+            <label class="form-label" for="task-title">Title</label>
+            <input type="text" class="form-input" id="task-title" required>
+          </div>
+          
+          <div class="form-control">
+            <label class="form-label" for="task-category">Category</label>
+            <select class="form-select" id="task-category">
+              <option value="">Select a category</option>
+            </select>
+          </div>
+          
+          <div class="form-control">
+            <label class="form-label">Classes</label>
+            <div class="class-options" id="task-classes"></div>
+          </div>
+          
+          <div class="form-control">
+            <label class="form-label" for="task-due-date">Due Date</label>
+            <div class="date-picker">
+              <input type="text" class="form-input" id="task-due-date" placeholder="Select a date" readonly>
+              <div class="calendar" id="calendar"></div>
+            </div>
+          </div>
+          
+          <div class="form-control">
+            <label class="form-label" for="task-priority">Priority</label>
+            <select class="form-select" id="task-priority">
+              <option value="">None</option>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>

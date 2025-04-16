@@ -11,10 +11,10 @@ This is a complete standalone version of the TaskFlow app implemented with vanil
 - Date picker
 - Task details in popup modal
 - Category and class management
-- Complete task functionality matching the React version
+- Complete task functionality
 
 ## How to Use
-1. Open the `taskflow.html` file in any modern browser
+1. Open the `taskflow-new.html` file in any modern browser
 2. Start managing your tasks!
 
 All data is stored in your browser's local storage, so your tasks will persist between sessions.
